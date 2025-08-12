@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#ffd700" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Avalon" />
+    
+    <!-- App Info -->
+    <title>🏰 Avalon - Juego de Roles</title>
+    <meta name="description" content="Juego de cartas de roles épico - Los Caballeros de la Mesa Redonda" />
+    
+    <!-- Icons -->
+    <link rel="icon" href="/asesino.png" />
+    <link rel="apple-touch-icon" href="/asesino.png" />
+    
+    <style>
+        /* Splash Screen Styling */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1a2e 50%, #2d1b2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: #ffd700;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        .castle-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .loading-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .loading-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            max-width: 300px;
+            z-index: 10000;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Info -->
+    <div id="debug-info" class="debug-info" style="display: none;">
+        <div>Status: <span id="debug-status">Iniciando...</span></div>
+        <div>Timestamp: <span id="debug-time"></span></div>
+        <div>User Agent: <span id="debug-ua"></span></div>
+        <div id="debug-errors"></div>
+    </div>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="castle-icon">🏰</div>
+        <div class="loading-text">Avalon</div>
+        <div class="loading-subtitle">Cargando el reino...</div>
+        <div class="loading-spinner"></div>
+        <div style="margin-top: 20px; font-size: 12px; opacity: 0.6;">
+            <div>Modo Debug - Sin Service Worker</div>
+            <div>Tap aquí para ver debug info</div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="root"></div>
+
+    <script>
+        // Debug utilities
+        function updateDebug(status) {
+            document.getElementById('debug-status').textContent = status;
+            document.getElementById('debug-time').textContent = new Date().toLocaleTimeString();
+            console.log('[DEBUG]', status);
+        }
+        
+        function showError(error) {
+            const errorDiv = document.getElementById('debug-errors');
+            errorDiv.innerHTML += '<div style="color: red; margin-top: 5px;">ERROR: ' + error + '</div>';
+            console.error('[ERROR]', error);
+        }
+        
+        // Toggle debug info on splash screen click
+        document.getElementById('splash-screen').addEventListener('click', function() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Initialize debug
+        updateDebug('DOM loaded');
+        document.getElementById('debug-ua').textContent = navigator.userAgent.substring(0, 50) + '...';
+        
+        // Global error handling
+        window.addEventListener('error', function(e) {
+            showError(e.message + ' at ' + e.filename + ':' + e.lineno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            showError('Promise rejected: ' + e.reason);
+        });
+        
+        // Check if React app loads
+        setTimeout(() => {
+            const root = document.getElementById('root');
+            if (!root.innerHTML.trim()) {
+                updateDebug('React app no se cargó - verificando...');
+                showError('El contenedor #root está vacío después de 3 segundos');
+            } else {
+                updateDebug('React app detectado');
+                // Hide splash screen after app loads
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display = 'none';
+                }, 1000);
+            }
+        }, 3000);
+        
+        updateDebug('Preparando para cargar React...');
+    </script>
+
+    <!-- React App Entry Point -->
+    <script src="/_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js" defer onload="updateDebug('AppEntry.js cargado')" onerror="showError('Error cargando AppEntry.js')"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@
     <!-- PWA Configuration -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#ffd700" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Avalon" />
@@ -17,8 +18,8 @@
     <meta name="description" content="Juego de cartas de roles épico - Los Caballeros de la Mesa Redonda" />
     
     <!-- Icons -->
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="icon" href="/asesino.png" />
+    <link rel="apple-touch-icon" href="/asesino.png" />
     
     <style>
         body {
@@ -81,6 +82,10 @@
     <div id="root"></div>
     
     <script>
+        // Service Worker temporalmente deshabilitado para debug
+        console.log('🔧 DEBUG MODE: Service Worker deshabilitado');
+        
+        /*
         // Registrar Service Worker para PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -89,12 +94,28 @@
                     .catch(error => console.log('SW registration failed'));
             });
         }
+        */
         
         // Ocultar splash después de cargar
         window.addEventListener('load', () => {
+            console.log('🎮 Window loaded, checking React app...');
             setTimeout(() => {
-                document.getElementById('splash').style.display = 'none';
-            }, 2000);
+                const root = document.getElementById('root');
+                const splash = document.getElementById('splash');
+                
+                if (root && root.innerHTML.trim()) {
+                    console.log('✅ React app loaded successfully');
+                    if (splash) splash.style.display = 'none';
+                } else {
+                    console.error('❌ React app not loaded - root is empty');
+                    console.log('Root content:', root ? root.innerHTML : 'root not found');
+                }
+            }, 3000); // Dar más tiempo para que React se cargue
+        });
+        
+        // Error handler global
+        window.addEventListener('error', function(e) {
+            console.error('❌ Global error:', e.message, 'at', e.filename + ':' + e.lineno);
         });
     </script>
 <script src="/_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js" defer></script>
