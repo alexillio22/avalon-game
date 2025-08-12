@@ -1,13 +1,10 @@
-const CACHE_NAME = 'avalon-assassin-v1.5';
+const CACHE_NAME = 'avalon-v1.0';
 const urlsToCache = [
   '/',
-  '/index.html',
+  '/static/js/bundle.js',
+  '/static/css/main.css',
   '/manifest.json',
-  '/favicon.ico',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/sw.js',
-  '/_expo/static/js/web/AppEntry-3c909dc164c3acb4aad110e45aba40a3.js',
+  '/favicon.ico'
 ];
 
 // Instalar Service Worker y cachear recursos

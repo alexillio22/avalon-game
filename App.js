@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
 
@@ -9,6 +9,10 @@ export default function App() {
   const [editingName, setEditingName] = useState('');
   const [gameAssignments, setGameAssignments] = useState([]);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  
+  // Estados para efectos visuales
+  const [lastVotePressed, setLastVotePressed] = useState(null); // 'success' o 'fail'
+  const [voteConfirmed, setVoteConfirmed] = useState(false);
   
   // Estado del juego
   const [gameState, setGameState] = useState({
@@ -24,6 +28,12 @@ export default function App() {
     gameOver: false,
     winner: null
   });
+
+  // Limpiar efectos visuales cuando cambie el votante
+  useEffect(() => {
+    setLastVotePressed(null);
+    setVoteConfirmed(false);
+  }, [gameState.currentSecretVoter]);
 
   // Función para reiniciar completamente el juego
   const resetGame = () => {
@@ -429,29 +439,42 @@ export default function App() {
   };
 
   const submitSecretMissionVote = (vote) => {
-    const newVotes = [...gameState.missionVotes];
-    newVotes[gameState.currentSecretVoter] = vote;
+    // Mostrar efecto visual inmediato
+    setLastVotePressed(vote ? 'success' : 'fail');
+    setVoteConfirmed(true);
     
-    // Encontrar siguiente votante en el equipo
-    const currentIndex = gameState.selectedTeam.indexOf(gameState.currentSecretVoter);
-    const nextIndex = currentIndex + 1;
-    
-    if (nextIndex < gameState.selectedTeam.length) {
-      // Siguiente jugador del equipo
-      const nextVoter = gameState.selectedTeam[nextIndex];
-      setGameState(prev => ({
-        ...prev,
-        currentSecretVoter: nextVoter,
-        missionVotes: newVotes
-      }));
-    } else {
-      // Todos han votado - ir a revelación
-      setGameState(prev => ({
-        ...prev,
-        missionVotes: newVotes,
-        votingPhase: 'revealVotes'
-      }));
-    }
+    // Pequeña pausa para mostrar el efecto antes de continuar
+    setTimeout(() => {
+      const newVotes = [...gameState.missionVotes];
+      newVotes[gameState.currentSecretVoter] = vote;
+      
+      // Encontrar siguiente votante en el equipo
+      const currentIndex = gameState.selectedTeam.indexOf(gameState.currentSecretVoter);
+      const nextIndex = currentIndex + 1;
+      
+      if (nextIndex < gameState.selectedTeam.length) {
+        // Siguiente jugador del equipo
+        const nextVoter = gameState.selectedTeam[nextIndex];
+        setGameState(prev => ({
+          ...prev,
+          currentSecretVoter: nextVoter,
+          missionVotes: newVotes
+        }));
+        // Resetear efectos visuales para el siguiente jugador
+        setLastVotePressed(null);
+        setVoteConfirmed(false);
+      } else {
+        // Todos han votado - ir a revelación
+        setGameState(prev => ({
+          ...prev,
+          missionVotes: newVotes,
+          votingPhase: 'revealVotes'
+        }));
+        // Resetear efectos visuales
+        setLastVotePressed(null);
+        setVoteConfirmed(false);
+      }
+    }, 800); // 800ms para mostrar el efecto visual
   };
 
   const revealMissionVotes = () => {
@@ -788,19 +811,49 @@ export default function App() {
                 
                 <View style={styles.secretVoteButtons}>
                   <TouchableOpacity
-                    style={[styles.secretVoteButton, styles.successButton]}
-                    onPress={() => submitSecretMissionVote(true)}
+                    style={[
+                      styles.secretVoteButton, 
+                      styles.successButton,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButton
+                    ]}
+                    onPress={() => !voteConfirmed && submitSecretMissionVote(true)}
+                    disabled={voteConfirmed}
                   >
-                    <Text style={styles.secretVoteButtonText}>⚔️ ÉXITO</Text>
-                    <Text style={styles.secretVoteDescription}>La misión tendrá éxito</Text>
+                    <Text style={[
+                      styles.secretVoteButtonText,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButtonText
+                    ]}>
+                      {lastVotePressed === 'success' && voteConfirmed ? '✅ ÉXITO SELECCIONADO' : '⚔️ ÉXITO'}
+                    </Text>
+                    <Text style={[
+                      styles.secretVoteDescription,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButtonDescription
+                    ]}>
+                      {lastVotePressed === 'success' && voteConfirmed ? 'Voto confirmado' : 'La misión tendrá éxito'}
+                    </Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity
-                    style={[styles.secretVoteButton, styles.failButton]}
-                    onPress={() => submitSecretMissionVote(false)}
+                    style={[
+                      styles.secretVoteButton, 
+                      styles.failButton,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButton
+                    ]}
+                    onPress={() => !voteConfirmed && submitSecretMissionVote(false)}
+                    disabled={voteConfirmed}
                   >
-                    <Text style={styles.secretVoteButtonText}>🗡️ FRACASO</Text>
-                    <Text style={styles.secretVoteDescription}>La misión fracasará</Text>
+                    <Text style={[
+                      styles.secretVoteButtonText,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButtonText
+                    ]}>
+                      {lastVotePressed === 'fail' && voteConfirmed ? '❌ FRACASO SELECCIONADO' : '🗡️ FRACASO'}
+                    </Text>
+                    <Text style={[
+                      styles.secretVoteDescription,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButtonDescription
+                    ]}>
+                      {lastVotePressed === 'fail' && voteConfirmed ? 'Voto confirmado' : 'La misión fracasará'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -818,9 +871,13 @@ export default function App() {
               <View style={styles.voteRevealContainer}>
                 <Text style={styles.voteRevealTitle}>Votos emitidos:</Text>
                 <View style={styles.anonymousVotes}>
-                  {gameState.selectedTeam.map((playerIndex, voteIndex) => {
-                    const vote = gameState.missionVotes[playerIndex];
-                    return (
+                  {(() => {
+                    // Obtener los votos de los jugadores seleccionados
+                    const teamVotes = gameState.selectedTeam.map(playerIndex => gameState.missionVotes[playerIndex]);
+                    // Aleatorizar el orden de los votos para mantener anonimato
+                    const shuffledVotes = [...teamVotes].sort(() => Math.random() - 0.5);
+                    
+                    return shuffledVotes.map((vote, voteIndex) => (
                       <View key={voteIndex} style={[
                         styles.anonymousVote,
                         vote ? styles.successVote : styles.failVote
@@ -829,8 +886,8 @@ export default function App() {
                           {vote ? '⚔️ ÉXITO' : '🗡️ FRACASO'}
                         </Text>
                       </View>
-                    );
-                  })}
+                    ));
+                  })()}
                 </View>
                 
                 {/* Mostrar información especial de misión 4 si aplica */}
@@ -1564,6 +1621,24 @@ const styles = StyleSheet.create({
     color: '#cccccc',
     fontSize: 12,
     textAlign: 'center',
+  },
+
+  // Estilos para efectos visuales de botones seleccionados
+  selectedButton: {
+    borderWidth: 4,
+    borderColor: '#ffd700',
+    backgroundColor: '#2a4a2a',
+    transform: [{ scale: 1.05 }],
+  },
+  selectedButtonText: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  selectedButtonDescription: {
+    color: '#ffd700',
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   // Estilos para revelación de votos
