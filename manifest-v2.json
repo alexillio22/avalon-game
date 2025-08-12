@@ -1,0 +1,23 @@
+{
+  "name": "Avalon - Juego de Roles",
+  "short_name": "Avalon",
+  "description": "Juego de cartas de roles épico - Los Caballeros de la Mesa Redonda",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0f1c",
+  "theme_color": "#ffd700",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./asesino.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./asesino.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "scope": "./"
+}
