@@ -1,10 +1,10 @@
-const CACHE_NAME = 'avalon-v1.0';
+const CACHE_NAME = 'avalon-v1.1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
+  '/index.html',
+  '/_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js',
   '/manifest.json',
-  '/favicon.ico'
+  '/asesino.png'
 ];
 
 // Instalar Service Worker y cachear recursos
@@ -14,7 +14,15 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Service Worker: Cacheando archivos');
-        return cache.addAll(urlsToCache);
+        // Cachear archivos uno por uno para evitar fallos
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`No se pudo cachear ${url}:`, err);
+              return Promise.resolve(); // Continuar aunque falle uno
+            })
+          )
+        );
       })
       .then(() => {
         console.log('Service Worker: Instalado correctamente');
