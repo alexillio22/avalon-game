@@ -80,85 +80,91 @@ export default function App() {
 
   // Pantalla de gestión de jugadores
   const PlayersScreen = () => (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>👥 Jugadores</Text>
       
-      <View style={styles.playersContainer}>
-        {players.length === 0 ? (
-          <Text style={styles.emptyText}>No hay jugadores añadidos</Text>
-        ) : (
-          players.map((player, index) => (
-            <View key={index} style={styles.playerCard}>
-              {editingPlayer === index ? (
-                // Modo edición
-                <View style={styles.editContainer}>
-                  <TextInput
-                    style={styles.nameInput}
-                    value={editingName}
-                    onChangeText={setEditingName}
-                    placeholder="Nombre del jugador"
-                    placeholderTextColor="#888"
-                    autoFocus
-                    maxLength={20}
-                  />
-                  <View style={styles.editButtons}>
-                    <TouchableOpacity 
-                      onPress={savePlayerName}
-                      style={styles.saveButton}
-                    >
-                      <Text style={styles.saveButtonText}>✓</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      onPress={cancelEdit}
-                      style={styles.cancelButton}
-                    >
-                      <Text style={styles.cancelButtonText}>✕</Text>
-                    </TouchableOpacity>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={true}
+      >
+        <View style={styles.playersContainer}>
+          {players.length === 0 ? (
+            <Text style={styles.emptyText}>No hay jugadores añadidos</Text>
+          ) : (
+            players.map((player, index) => (
+              <View key={index} style={styles.playerCard}>
+                {editingPlayer === index ? (
+                  // Modo edición
+                  <View style={styles.editContainer}>
+                    <TextInput
+                      style={styles.nameInput}
+                      value={editingName}
+                      onChangeText={setEditingName}
+                      placeholder="Nombre del jugador"
+                      placeholderTextColor="#888"
+                      autoFocus
+                      maxLength={20}
+                    />
+                    <View style={styles.editButtons}>
+                      <TouchableOpacity 
+                        onPress={savePlayerName}
+                        style={styles.saveButton}
+                      >
+                        <Text style={styles.saveButtonText}>✓</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={cancelEdit}
+                        style={styles.cancelButton}
+                      >
+                        <Text style={styles.cancelButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ) : (
-                // Modo normal
-                <>
-                  <TouchableOpacity 
-                    onPress={() => {
-                      setEditingPlayer(index);
-                      setEditingName(player);
-                    }}
-                    style={styles.nameContainer}
-                  >
-                    <Text style={styles.playerName}>{player}</Text>
-                    <Text style={styles.editHint}>Toca para editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    onPress={() => setPlayers(players.filter((_, i) => i !== index))}
-                    style={styles.removeButton}
-                  >
-                    <Text style={styles.removeButtonText}>🗑️</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          ))
-        )}
-      </View>
+                ) : (
+                  // Modo normal
+                  <>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setEditingPlayer(index);
+                        setEditingName(player);
+                      }}
+                      style={styles.nameContainer}
+                    >
+                      <Text style={styles.playerName}>{player}</Text>
+                      <Text style={styles.editHint}>Toca para editar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => setPlayers(players.filter((_, i) => i !== index))}
+                      style={styles.removeButton}
+                    >
+                      <Text style={styles.removeButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            ))
+          )}
+        </View>
 
-      <TouchableOpacity 
-        style={styles.addButton}
-        onPress={() => {
-          const newPlayer = `Jugador ${players.length + 1}`;
-          setPlayers([...players, newPlayer]);
-        }}
-      >
-        <Text style={styles.addButtonText}>+ Añadir Jugador</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => {
+            const newPlayer = `Jugador ${players.length + 1}`;
+            setPlayers([...players, newPlayer]);
+          }}
+        >
+          <Text style={styles.addButtonText}>+ Añadir Jugador</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => setCurrentScreen('menu')}
-      >
-        <Text style={styles.backButtonText}>← Volver al Menú</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => setCurrentScreen('menu')}
+        >
+          <Text style={styles.backButtonText}>← Volver al Menú</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 
   // Función para iniciar el juego y asignar roles
@@ -215,85 +221,91 @@ export default function App() {
     };
     
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.title}>🎭 ASIGNACIÓN DE ROLES</Text>
         <Text style={styles.subtitle}>
           Jugador {currentPlayerIndex + 1} de {gameAssignments.length}
         </Text>
         
-        <View style={styles.roleRevealContainer}>
-          {!showRole ? (
-            // Pantalla de preparación
-            <View style={styles.prepContainer}>
-              <Text style={styles.playerNameBig}>{currentPlayer.name}</Text>
-              <Text style={styles.prepText}>Es tu turno de ver tu rol</Text>
-              <Text style={styles.warningText}>
-                ⚠️ Asegúrate de que nadie más esté mirando
-              </Text>
-              
-              <TouchableOpacity 
-                style={styles.revealButton}
-                onPress={() => setShowRole(true)}
-              >
-                <Text style={styles.revealButtonText}>👁️ Revelar mi Rol</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            // Pantalla de rol revelado
-            <View style={styles.roleContainer}>
-              <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
-              <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
-              <Text style={styles.roleTeam}>
-                Equipo: {currentPlayer.roleInfo.team === 'good' ? '👑 Buenos' : '⚡ Malos'}
-              </Text>
-              <Text style={styles.roleDescription}>
-                {currentPlayer.roleInfo.description}
-              </Text>
-              
-              {/* Información que puede ver */}
-              {playerVision.length > 0 && (
-                <View style={styles.visionContainer}>
-                  <Text style={styles.visionTitle}>
-                    👁️ {currentPlayer.role === 'PERCIVAL' ? 'Ves a estos magos (¿quién es quién?)' : 'Puedes ver:'}
-                  </Text>
-                  {playerVision.map((visiblePlayer, index) => (
-                    <Text key={index} style={styles.visionText}>
-                      {visiblePlayer.emoji} {visiblePlayer.name} ({visiblePlayer.role})
-                    </Text>
-                  ))}
-                  {currentPlayer.role === 'PERCIVAL' && (
-                    <Text style={styles.mysteryText}>
-                      🤔 Uno es Merlín, el otro es Morgana. ¡Debes averiguar cuál es cuál durante el juego!
-                    </Text>
-                  )}
-                </View>
-              )}
-              
-              {/* Información del equipo malo */}
-              {evilTeamInfo.length > 0 && (
-                <View style={styles.teamContainer}>
-                  <Text style={styles.teamTitle}>⚡ Tus compañeros malvados:</Text>
-                  {evilTeamInfo.map((teammate, index) => (
-                    <Text key={index} style={styles.teamText}>
-                      {teammate.emoji} {teammate.name} ({teammate.role})
-                    </Text>
-                  ))}
-                </View>
-              )}
-              
-              <TouchableOpacity 
-                style={styles.nextButton}
-                onPress={nextPlayer}
-              >
-                <Text style={styles.nextButtonText}>
-                  {currentPlayerIndex < gameAssignments.length - 1 ? 
-                    '➡️ Siguiente Jugador' : '🎮 Comenzar Partida'}
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.roleRevealContainer}>
+            {!showRole ? (
+              // Pantalla de preparación
+              <View style={styles.prepContainer}>
+                <Text style={styles.playerNameBig}>{currentPlayer.name}</Text>
+                <Text style={styles.prepText}>Es tu turno de ver tu rol</Text>
+                <Text style={styles.warningText}>
+                  ⚠️ Asegúrate de que nadie más esté mirando
                 </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
+                
+                <TouchableOpacity 
+                  style={styles.revealButton}
+                  onPress={() => setShowRole(true)}
+                >
+                  <Text style={styles.revealButtonText}>👁️ Revelar mi Rol</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              // Pantalla de rol revelado
+              <View style={styles.roleContainer}>
+                <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
+                <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
+                <Text style={styles.roleTeam}>
+                  Equipo: {currentPlayer.roleInfo.team === 'good' ? '👑 Buenos' : '⚡ Malos'}
+                </Text>
+                <Text style={styles.roleDescription}>
+                  {currentPlayer.roleInfo.description}
+                </Text>
+                
+                {/* Información que puede ver */}
+                {playerVision.length > 0 && (
+                  <View style={styles.visionContainer}>
+                    <Text style={styles.visionTitle}>
+                      👁️ {currentPlayer.role === 'PERCIVAL' ? 'Ves a estos magos (¿quién es quién?)' : 'Puedes ver:'}
+                    </Text>
+                    {playerVision.map((visiblePlayer, index) => (
+                      <Text key={index} style={styles.visionText}>
+                        {visiblePlayer.emoji} {visiblePlayer.name} ({visiblePlayer.role})
+                      </Text>
+                    ))}
+                    {currentPlayer.role === 'PERCIVAL' && (
+                      <Text style={styles.mysteryText}>
+                        🤔 Uno es Merlín, el otro es Morgana. ¡Debes averiguar cuál es cuál durante el juego!
+                      </Text>
+                    )}
+                  </View>
+                )}
+                
+                {/* Información del equipo malo */}
+                {evilTeamInfo.length > 0 && (
+                  <View style={styles.teamContainer}>
+                    <Text style={styles.teamTitle}>⚡ Tus compañeros malvados:</Text>
+                    {evilTeamInfo.map((teammate, index) => (
+                      <Text key={index} style={styles.teamText}>
+                        {teammate.emoji} {teammate.name} ({teammate.role})
+                      </Text>
+                    ))}
+                  </View>
+                )}
+                
+                <TouchableOpacity 
+                  style={styles.nextButton}
+                  onPress={nextPlayer}
+                >
+                  <Text style={styles.nextButtonText}>
+                    {currentPlayerIndex < gameAssignments.length - 1 ? 
+                      '➡️ Siguiente Jugador' : '🎮 Comenzar Partida'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     );
   };
 
@@ -513,88 +525,94 @@ export default function App() {
   const GameScreen = () => {
     if (gameState.gameOver) {
       return (
-        <View style={styles.container}>
-          <Text style={styles.title}>
-            {gameState.winner === 'good' ? '👑 ¡LOS BUENOS GANAN!' : '⚡ ¡LOS MALOS GANAN!'}
-          </Text>
-          <Text style={styles.subtitle}>Fin del juego</Text>
-          
-          <View style={styles.gameContainer}>
-            <Text style={styles.gameText}>Resultados de las misiones:</Text>
-            {gameState.missionResults.map((result, index) => (
-              <Text key={index} style={styles.gameText}>
-                Misión {index + 1}: {result ? '✅ Éxito' : '❌ Fracaso'}
-              </Text>
-            ))}
+        <SafeAreaView style={styles.container}>
+          <ScrollView 
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContentContainer}
+            showsVerticalScrollIndicator={true}
+          >
+            <Text style={styles.title}>
+              {gameState.winner === 'good' ? '👑 ¡LOS BUENOS GANAN!' : '⚡ ¡LOS MALOS GANAN!'}
+            </Text>
+            <Text style={styles.subtitle}>Fin del juego</Text>
             
-            {/* Mostrar información del asesinato de Merlín si ocurrió */}
-            {gameState.assassinationTarget !== undefined && (
-              <View style={styles.assassinationResultContainer}>
-                <Text style={styles.assassinationResultTitle}>
-                  🗡️ Intento de Asesinato de Merlín
-                </Text>
-                <Text style={styles.assassinationResultText}>
-                  🎯 Objetivo elegido: {players[gameState.assassinationTarget]}
-                </Text>
-                <Text style={[
-                  styles.assassinationResultText,
-                  gameState.assassinationResult === 'success' 
-                    ? styles.assassinationSuccess 
-                    : styles.assassinationFailed
-                ]}>
-                  {gameState.assassinationResult === 'success' 
-                    ? '💀 ¡Correcto! Era Merlín. Los malos ganan.' 
-                    : '❌ ¡Incorrecto! No era Merlín. Los buenos ganan.'}
-                </Text>
-                {gameState.assassinationResult === 'failed' && gameState.realMerlinIndex !== undefined && (
-                  <Text style={styles.realMerlinReveal}>
-                    🧙‍♂️ El verdadero Merlín era: {players[gameState.realMerlinIndex]}
-                  </Text>
-                )}
-              </View>
-            )}
-            
-            {/* Revelar todos los roles al final */}
-            <View style={styles.roleRevealFinal}>
-              <Text style={styles.finalRoleTitle}>🎭 Roles de todos los jugadores:</Text>
-              {gameAssignments.map((player, index) => (
-                <Text key={index} style={[
-                  styles.finalRoleText,
-                  player.roleInfo.team === 'good' ? styles.goodTeamText : styles.evilTeamText
-                ]}>
-                  {players[index]}: {player.roleInfo.emoji} {player.roleInfo.name}
+            <View style={styles.gameContainer}>
+              <Text style={styles.gameText}>Resultados de las misiones:</Text>
+              {gameState.missionResults.map((result, index) => (
+                <Text key={index} style={styles.gameText}>
+                  Misión {index + 1}: {result ? '✅ Éxito' : '❌ Fracaso'}
                 </Text>
               ))}
+              
+              {/* Mostrar información del asesinato de Merlín si ocurrió */}
+              {gameState.assassinationTarget !== undefined && (
+                <View style={styles.assassinationResultContainer}>
+                  <Text style={styles.assassinationResultTitle}>
+                    🗡️ Intento de Asesinato de Merlín
+                  </Text>
+                  <Text style={styles.assassinationResultText}>
+                    🎯 Objetivo elegido: {players[gameState.assassinationTarget]}
+                  </Text>
+                  <Text style={[
+                    styles.assassinationResultText,
+                    gameState.assassinationResult === 'success' 
+                      ? styles.assassinationSuccess 
+                      : styles.assassinationFailed
+                  ]}>
+                    {gameState.assassinationResult === 'success' 
+                      ? '💀 ¡Correcto! Era Merlín. Los malos ganan.' 
+                      : '❌ ¡Incorrecto! No era Merlín. Los buenos ganan.'}
+                  </Text>
+                  {gameState.assassinationResult === 'failed' && gameState.realMerlinIndex !== undefined && (
+                    <Text style={styles.realMerlinReveal}>
+                      🧙‍♂️ El verdadero Merlín era: {players[gameState.realMerlinIndex]}
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {/* Revelar todos los roles al final */}
+              <View style={styles.roleRevealFinal}>
+                <Text style={styles.finalRoleTitle}>🎭 Roles de todos los jugadores:</Text>
+                {gameAssignments.map((player, index) => (
+                  <Text key={index} style={[
+                    styles.finalRoleText,
+                    player.roleInfo.team === 'good' ? styles.goodTeamText : styles.evilTeamText
+                  ]}>
+                    {players[index]}: {player.roleInfo.emoji} {player.roleInfo.name}
+                  </Text>
+                ))}
+              </View>
             </View>
-          </View>
 
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => {
-              setCurrentScreen('menu');
-              setGameAssignments([]);
-              setGameState({
-                currentMission: 1,
-                missionResults: [],
-                currentLeader: 0,
-                selectedTeam: [],
-                votingPhase: 'teamSelection',
-                teamVotes: [],
-                missionVotes: [],
-                currentSecretVoter: 0,
-                failedProposals: 0,
-                gameOver: false,
-                winner: null,
-                gameConfig: null,
-                assassinationTarget: undefined,
-                assassinationResult: undefined,
-                realMerlinIndex: undefined
-              });
-            }}
-          >
-            <Text style={styles.backButtonText}>← Nueva Partida</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => {
+                setCurrentScreen('menu');
+                setGameAssignments([]);
+                setGameState({
+                  currentMission: 1,
+                  missionResults: [],
+                  currentLeader: 0,
+                  selectedTeam: [],
+                  votingPhase: 'teamSelection',
+                  teamVotes: [],
+                  missionVotes: [],
+                  currentSecretVoter: 0,
+                  failedProposals: 0,
+                  gameOver: false,
+                  winner: null,
+                  gameConfig: null,
+                  assassinationTarget: undefined,
+                  assassinationResult: undefined,
+                  realMerlinIndex: undefined
+                });
+              }}
+            >
+              <Text style={styles.backButtonText}>← Nueva Partida</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
       );
     }
 
@@ -1647,5 +1665,15 @@ const styles = StyleSheet.create({
   },
   evilTeamText: {
     color: '#ff4444',
+  },
+
+  // Estilos para scroll
+  scrollContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
 });

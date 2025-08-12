@@ -3,6 +3,7 @@
     "name": "Avalon",
     "slug": "avalon-game",
     "version": "1.0.0",
+    "sdkVersion": "53.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -15,7 +16,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourname.avalon",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

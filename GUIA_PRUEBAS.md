@@ -5,11 +5,13 @@
 ### 1. Regla Especial de la Misión 4 (7+ Jugadores)
 
 #### Configuración para Prueba:
+
 - **Añadir 7 jugadores** para activar la regla especial
 - Jugar hasta llegar a la **Misión 4**
 - Observar el indicador visual que dice: "⚡ Regla Especial Misión 4: Se necesitan 2 votos de FRACASO para que ganen los malos"
 
 #### Escenarios de Prueba:
+
 - **Escenario A**: Los malos votan 1 fracaso → Los buenos ganan la misión
 - **Escenario B**: Los malos votan 2+ fracasos → Los malos ganan la misión
 - **Escenario C**: Con 5-6 jugadores, verificar que sigue la regla normal (1 fracaso = victoria de los malos)
@@ -17,19 +19,22 @@
 ### 2. Fase de Asesinato de Merlín
 
 #### Configuración para Prueba:
+
 - Asegurarse de que hay un **Asesino** y un **Merlín** en el juego (automático con 5+ jugadores)
 - Hacer que **los buenos ganen** completando 3 misiones exitosas
 
 #### Qué Observar:
+
 1. **Pantalla de Asesinato**: Debe aparecer automáticamente después de que los buenos ganen
 2. **Solo Jugadores Buenos**: Solo deben aparecer como objetivos los jugadores del equipo bueno
-3. **Resultado del Asesinato**: 
+3. **Resultado del Asesinato**:
    - Si el Asesino elige a Merlín → "💀 ¡Merlín fue asesinado! Los malos ganan."
    - Si el Asesino falla → "🛡️ ¡Merlín sobrevivió! Los buenos ganan."
 
 ### 3. Pantalla Final Mejorada
 
 #### Qué Verificar:
+
 - **Información del Asesinato**: Si ocurrió, debe mostrar el objetivo y el resultado
 - **Revelación de Roles**: Todos los roles se revelan al final con colores:
   - 🟢 **Verde**: Jugadores buenos
@@ -39,6 +44,7 @@
 ## 🔧 Casos de Prueba Específicos
 
 ### Caso 1: Regla Misión 4 (7 Jugadores)
+
 ```
 1. Crear 7 jugadores: Ana, Bob, Carlos, Diana, Eva, Felipe, Gaby
 2. Iniciar partida (Roles: Merlín, Percival, 2 Leales, Asesino, Morgana, Mordred)
@@ -49,6 +55,7 @@
 ```
 
 ### Caso 2: Asesinato de Merlín Exitoso
+
 ```
 1. Crear 5 jugadores: Ana, Bob, Carlos, Diana, Eva
 2. Roles: Merlín=Ana, Asesino=Bob, otros aleatorios
@@ -58,6 +65,7 @@
 ```
 
 ### Caso 3: Asesinato de Merlín Fallido
+
 ```
 1. Misma configuración que Caso 2
 2. En pantalla de asesinato: El Asesino elige a Carlos (no Merlín)
@@ -67,16 +75,19 @@
 ## 🐛 Posibles Problemas y Soluciones
 
 ### Si no aparece la regla especial de Misión 4:
+
 - Verificar que hay 7+ jugadores
 - Confirmar que es exactamente la misión 4
 - Reiniciar la aplicación si es necesario
 
 ### Si no aparece la pantalla de asesinato:
+
 - Verificar que los buenos ganaron (3 misiones exitosas)
 - Confirmar que hay Asesino y Merlín en el juego
 - Verificar en los roles iniciales
 
 ### Si los estilos se ven mal:
+
 - Reiniciar el servidor: `npm start`
 - Verificar que no hay errores en la consola
 - Probar en diferentes dispositivos/navegadores
@@ -84,7 +95,7 @@
 ## ✅ Lista de Verificación Final
 
 - [ ] Regla especial misión 4 funciona correctamente (7+ jugadores)
-- [ ] Regla normal misión 4 funciona (5-6 jugadores)  
+- [ ] Regla normal misión 4 funciona (5-6 jugadores)
 - [ ] Pantalla de asesinato aparece cuando corresponde
 - [ ] Solo se muestran jugadores buenos como objetivos
 - [ ] Asesinato exitoso da victoria a los malos
