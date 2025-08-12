@@ -8,6 +8,7 @@ export default function App() {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [gameAssignments, setGameAssignments] = useState([]);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   // Estado del juego
   const [gameState, setGameState] = useState({
@@ -23,6 +24,38 @@ export default function App() {
     gameOver: false,
     winner: null
   });
+
+  // Función para reiniciar completamente el juego
+  const resetGame = () => {
+    setShowResetConfirm(true);
+  };
+
+  // Función para confirmar el reseteo
+  const confirmReset = () => {
+    // Resetear todos los estados del juego pero mantener jugadores
+    setGameAssignments([]);
+    setGameState({
+      currentMission: 1,
+      missionResults: [],
+      currentLeader: 0,
+      selectedTeam: [],
+      votingPhase: 'teamSelection',
+      teamVotes: [],
+      missionVotes: [],
+      currentSecretVoter: 0,
+      failedProposals: 0,
+      gameOver: false,
+      winner: null
+    });
+    // Cambiar a la pantalla del menú
+    setCurrentScreen('menu');
+    setShowResetConfirm(false);
+  };
+
+  // Función para cancelar el reseteo
+  const cancelReset = () => {
+    setShowResetConfirm(false);
+  };
 
   // Pantalla del menú principal
   const MenuScreen = () => (
@@ -732,9 +765,18 @@ export default function App() {
           {gameState.votingPhase === 'secretMissionVoting' && (
             <View style={styles.votingContainer}>
               <Text style={styles.phaseTitle}>🤫 Votación Secreta</Text>
-              <Text style={styles.phaseSubtitle}>
-                Turno de: {gameAssignments[gameState.currentSecretVoter]?.name}
-              </Text>
+              
+              {/* Indicador visual del jugador actual */}
+              <View style={styles.currentPlayerIndicator}>
+                <Text style={styles.currentPlayerTitle}>TURNO DEL JUGADOR:</Text>
+                <Text style={styles.currentPlayerName}>
+                  {gameAssignments[gameState.currentSecretVoter]?.name}
+                </Text>
+                <Text style={styles.playerCounter}>
+                  Jugador {gameState.currentSecretVoter + 1} de {gameState.selectedTeam.length}
+                </Text>
+              </View>
+              
               <Text style={styles.instructionText}>
                 ⚠️ Solo {gameAssignments[gameState.currentSecretVoter]?.name} debe ver esta pantalla
               </Text>
@@ -859,13 +901,55 @@ export default function App() {
     );
   };
 
+  // Componente del botón de nuevo juego (aparece en todas las pantallas excepto el menú)
+  const NewGameButton = () => (
+    <View style={styles.newGameButtonContainer}>
+      <TouchableOpacity 
+        style={styles.newGameButton} 
+        onPress={resetGame}
+      >
+        <Text style={styles.newGameButtonText}>🔄</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Modal de confirmación para nuevo juego
+  const ResetConfirmModal = () => (
+    showResetConfirm && (
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>🔄 Nuevo Juego</Text>
+          <Text style={styles.modalText}>
+            ¿Estás seguro de que quieres empezar un nuevo juego? Se perderá el progreso actual.
+          </Text>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity style={styles.modalCancelButton} onPress={cancelReset}>
+              <Text style={styles.modalCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalConfirmButton} onPress={confirmReset}>
+              <Text style={styles.modalConfirmText}>Sí, nuevo juego</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    )
+  );
+
   // Renderizar la pantalla actual
   return (
     <SafeAreaView style={styles.safeArea}>
-      {currentScreen === 'menu' && <MenuScreen />}
-      {currentScreen === 'players' && <PlayersScreen />}
-      {currentScreen === 'roleReveal' && <RoleRevealScreen />}
-      {currentScreen === 'game' && <GameScreen />}
+      <View style={styles.mainContainer}>
+        {currentScreen === 'menu' && <MenuScreen />}
+        {currentScreen === 'players' && <PlayersScreen />}
+        {currentScreen === 'roleReveal' && <RoleRevealScreen />}
+        {currentScreen === 'game' && <GameScreen />}
+        
+        {/* Botón de nuevo juego - aparece en todas las pantallas excepto el menú */}
+        {currentScreen !== 'menu' && <NewGameButton />}
+        
+        {/* Modal de confirmación */}
+        <ResetConfirmModal />
+      </View>
     </SafeAreaView>
   );
 }
@@ -1367,6 +1451,38 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontStyle: 'italic',
   },
+
+  // Estilos para indicador del jugador actual
+  currentPlayerIndicator: {
+    backgroundColor: '#2d1a4a',
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 3,
+    borderColor: '#ff6b35',
+    width: '95%',
+    alignSelf: 'center',
+  },
+  currentPlayerTitle: {
+    color: '#ff6b35',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    letterSpacing: 1,
+  },
+  currentPlayerName: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  playerCounter: {
+    color: '#cccccc',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
   approvedVoterCard: {
     backgroundColor: '#2d5016',
     borderColor: '#4a7c26',
@@ -1415,6 +1531,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#ffd700',
+    width: '100%',
+    alignSelf: 'center',
   },
   secretVotingText: {
     color: '#ffffff',
@@ -1424,14 +1542,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   secretVoteButtons: {
-    flexDirection: 'row',
-    gap: 20,
+    flexDirection: 'column',
+    gap: 15,
+    width: '100%',
+    alignItems: 'center',
   },
   secretVoteButton: {
     padding: 20,
     borderRadius: 15,
     alignItems: 'center',
-    minWidth: 140,
+    width: '90%',
     borderWidth: 2,
   },
   secretVoteButtonText: {
@@ -1674,6 +1794,108 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 20, // Volver al padding original
+  },
+
+  // Estilos para el contenedor principal y botón de nuevo juego
+  mainContainer: {
+    flex: 1,
+  },
+  newGameButtonContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  newGameButton: {
+    backgroundColor: '#cc4444',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ff6666',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  newGameButtonText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para el modal de confirmación
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+  },
+  modalContainer: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 15,
+    padding: 25,
+    margin: 20,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    minWidth: 280,
+  },
+  modalTitle: {
+    color: '#ffd700',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  modalText: {
+    color: '#cccccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: '#555555',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#777777',
+  },
+  modalCancelText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalConfirmButton: {
+    flex: 1,
+    backgroundColor: '#cc4444',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ff6666',
+  },
+  modalConfirmText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

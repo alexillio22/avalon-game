@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json?v=2" />
+    <meta name="theme-color" content="#ffd700" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="🏰 Avalon" />
+    
+    <!-- App Info -->
+    <title>🏰 Avalon - The Resistance</title>
+    <meta name="description" content="Juego épico de roles - Los Caballeros vs El Asesino" />
+    
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico?v=2" />
+    <link rel="apple-touch-icon" href="/icon-192.png?v=2" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png?v=2" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png?v=2" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0f1c;
+            overflow: hidden;
+        }
+        
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .castle {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .title {
+            color: #ffd700;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .subtitle {
+            color: #cccccc;
+            font-size: 16px;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="splash">
+        <div class="castle">🏰</div>
+        <div class="title">AVALON</div>
+        <div class="subtitle">Cargando el reino...</div>
+    </div>
+    
+    <div id="root"></div>
+    
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+        
+        // Ocultar splash después de cargar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+            }, 2000);
+        });
+    </script>
+<script src="/_expo/static/js/web/AppEntry-ed4dfb696adec1ae597eac15039f6d94.js" defer></script>
+</body>
+</html>

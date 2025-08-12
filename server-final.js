@@ -118,7 +118,9 @@ server.on('error', (err) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const localIPs = getLocalIPs();
-  const wifiIP = localIPs.find(ip => ip.startsWith('192.168.1.')) || localIPs[0];
+  // Forzar IP para red 192.168.1.x
+  const forcedIP = '192.168.1.139'; // Usamos la misma IP base que el iPhone
+  const wifiIP = localIPs.find(ip => ip.startsWith('192.168.1.')) || forcedIP;
   
   console.log(`🎮 Avalon PWA corriendo en puerto ${PORT}`);
   console.log(`📂 Sirviendo desde: ${DIST_DIR}`);
@@ -130,6 +132,11 @@ server.listen(PORT, '0.0.0.0', () => {
     const marker = ip.startsWith('192.168.1.') ? '👈 USAR ESTA IP' : '';
     console.log(`   Red:       http://${ip}:${PORT} ${marker}`);
   });
+  
+  // Mostrar todas las IPs posibles en 192.168.1.x
+  for (let i = 100; i <= 150; i++) {
+    console.log(`   Prueba:    http://192.168.1.${i}:${PORT}`);
+  }
   
   console.log(`\n📱 Para iPhone (en red 192.168.1.x):`);
   if (wifiIP) {
