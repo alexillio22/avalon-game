@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
     
     <!-- PWA Configuration -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#ffd700" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,8 +18,8 @@
     <meta name="description" content="Juego de cartas de roles épico - Los Caballeros de la Mesa Redonda" />
     
     <!-- Icons -->
-    <link rel="icon" href="/asesino.png" />
-    <link rel="apple-touch-icon" href="/asesino.png" />
+    <link rel="icon" href="./asesino.png" />
+    <link rel="apple-touch-icon" href="./asesino.png" />
     
     <style>
         body {
@@ -118,6 +118,21 @@
             console.error('❌ Global error:', e.message, 'at', e.filename + ':' + e.lineno);
         });
     </script>
-<script src="/static/js/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js" defer></script>
+<script src="./static/js/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js" defer onload="console.log('✅ AppEntry.js loaded successfully')" onerror="console.error('❌ AppEntry.js failed to load')"></script>
+<script>
+    // Debug adicional para React
+    setTimeout(() => {
+        console.log('🔍 Checking for React/Expo globals...');
+        console.log('window.React:', typeof window.React);
+        console.log('window.ReactDOM:', typeof window.ReactDOM);
+        console.log('window.expo:', typeof window.expo);
+        console.log('window.__EXPO_ENV__:', window.__EXPO_ENV__);
+        
+        // Verificar si hay errores en el stack
+        if (window.ErrorUtils) {
+            console.log('✅ ErrorUtils detected (React Native)');
+        }
+    }, 4000);
+</script>
 </body>
 </html>
