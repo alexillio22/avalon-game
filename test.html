@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>🏰 Avalon - Test</title>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1a2e 50%, #2d1b2e 100%);
+            color: #ffd700;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 400px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #51cf66;
+        }
+        
+        button {
+            background: #ffd700;
+            color: #0a0f1c;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background: #ffed4e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏰</h1>
+        <h2>Avalon - Test de Conectividad</h2>
+        
+        <div id="status" class="status">Iniciando tests...</div>
+        
+        <div id="results"></div>
+        
+        <button onclick="runTests()">🔄 Ejecutar Tests</button>
+        <button onclick="loadFullApp()">🎮 Cargar App Completa</button>
+        
+        <div style="margin-top: 30px; font-size: 14px; opacity: 0.7;">
+            <div>URL actual: <span id="current-url"></span></div>
+            <div>User Agent: <span id="user-agent"></span></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent.substring(0, 50) + '...';
+        
+        function updateStatus(message, type = 'status') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+            console.log('[' + type.toUpperCase() + ']', message);
+        }
+        
+        function addResult(test, result, details = '') {
+            const resultsEl = document.getElementById('results');
+            const resultEl = document.createElement('div');
+            resultEl.className = 'status ' + (result ? 'success' : 'error');
+            resultEl.innerHTML = `
+                <strong>${test}:</strong> ${result ? '✅ OK' : '❌ FAIL'}<br>
+                ${details ? '<small>' + details + '</small>' : ''}
+            `;
+            resultsEl.appendChild(resultEl);
+        }
+        
+        async function testFetch(url, name) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    addResult(name, true, `Status: ${response.status}`);
+                    return true;
+                } else {
+                    addResult(name, false, `Status: ${response.status} ${response.statusText}`);
+                    return false;
+                }
+            } catch (error) {
+                addResult(name, false, `Error: ${error.message}`);
+                return false;
+            }
+        }
+        
+        async function runTests() {
+            document.getElementById('results').innerHTML = '';
+            updateStatus('Ejecutando tests de conectividad...');
+            
+            // Test básico de conectividad
+            addResult('Conectividad', navigator.onLine, navigator.onLine ? 'Online' : 'Offline');
+            
+            // Test archivos principales
+            await testFetch('./manifest.json', 'Manifest.json');
+            await testFetch('./asesino.png', 'Icono (asesino.png)');
+            await testFetch('./_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js', 'React App (AppEntry.js)');
+            
+            // Test de la página actual
+            await testFetch('./', 'Página actual');
+            
+            updateStatus('Tests completados. Revisar resultados arriba.', 'success');
+        }
+        
+        function loadFullApp() {
+            updateStatus('Redirigiendo a la app completa...', 'status');
+            window.location.href = './index.html';
+        }
+        
+        // Ejecutar tests automáticamente al cargar
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>
