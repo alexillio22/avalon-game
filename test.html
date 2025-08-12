@@ -130,7 +130,8 @@
             // Test archivos principales
             await testFetch('./manifest.json', 'Manifest.json');
             await testFetch('./asesino.png', 'Icono (asesino.png)');
-            await testFetch('./_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js', 'React App (AppEntry.js)');
+            await testFetch('./static/js/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js', 'React App (Nueva ruta /static/)');
+            await testFetch('./_expo/static/js/web/AppEntry-0ec3cab817b6e20a9eb17dc6ca887058.js', 'React App (Ruta original /_expo/)');
             
             // Test de la página actual
             await testFetch('./', 'Página actual');
