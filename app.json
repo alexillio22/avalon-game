@@ -29,7 +29,17 @@
       "versionCode": 1
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "name": "Avalon Game",
+      "shortName": "Avalon",
+      "lang": "es",
+      "scope": "/avalon-game/",
+      "startUrl": "/avalon-game/",
+      "display": "standalone",
+      "orientation": "portrait",
+      "themeColor": "#1a1a2e",
+      "backgroundColor": "#1a1a2e"
     },
     "extra": {
       "eas": {

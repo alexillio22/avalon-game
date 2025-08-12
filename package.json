@@ -13,6 +13,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build-web": "npx expo export -p web --output-dir dist",
+    "build-github-pages": "node build-github-pages.js",
+    "test-github-pages": "node test-github-pages.js",
     "serve-web": "node server-final.js"
   },
   "dependencies": {

@@ -1,24 +1,23 @@
 {
-  "name": "🏰 Avalon - The Resistance",
-  "short_name": "🏰 Avalon",
-  "description": "Juego épico de roles - Los Caballeros de la Mesa Redonda vs El Asesino",
-  "start_url": "/",
+  "name": "Avalon - Juego de Roles",
+  "short_name": "Avalon",
+  "description": "Juego de cartas de roles épico - Los Caballeros de la Mesa Redonda",
+  "start_url": "/avalon-game/",
   "display": "standalone",
   "background_color": "#0a0f1c",
   "theme_color": "#ffd700",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png?v=4",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/icon-512.png?v=4", 
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ]
+  ],
+  "scope": "/avalon-game/"
 }
