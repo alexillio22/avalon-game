@@ -82,19 +82,30 @@
     <div id="root"></div>
     
     <script>
-        // Service Worker temporalmente deshabilitado para debug
-        console.log('🔧 DEBUG MODE: Service Worker deshabilitado');
-        
-        /*
-        // Registrar Service Worker para PWA
+        // 🚀 Service Worker Enhanced con precaching estratégico
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw-simple.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
+                navigator.serviceWorker.register('./sw-enhanced.js')
+                    .then(registration => {
+                        console.log('✅ SW Enhanced registrado exitosamente', registration.scope);
+                        
+                        // Escuchar actualizaciones del Service Worker
+                        registration.addEventListener('updatefound', () => {
+                            console.log('🔄 Nueva versión del SW encontrada');
+                        });
+                    })
+                    .catch(error => {
+                        console.error('❌ SW Enhanced registration failed:', error);
+                    });
+                
+                // Escuchar mensajes del Service Worker
+                navigator.serviceWorker.addEventListener('message', event => {
+                    console.log('📨 Mensaje del SW:', event.data);
+                });
             });
+        } else {
+            console.warn('⚠️ Service Worker no soportado en este navegador');
         }
-        */
         
         // Ocultar splash después de cargar
         window.addEventListener('load', () => {
@@ -131,6 +142,27 @@
         // Verificar si hay errores en el stack
         if (window.ErrorUtils) {
             console.log('✅ ErrorUtils detected (React Native)');
+        }
+        
+        // Debug del Service Worker y cache
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            console.log('📦 Service Worker activo detected');
+            
+            // Verificar cache disponible
+            caches.keys().then(cacheNames => {
+                console.log('💾 Caches disponibles:', cacheNames);
+                if (cacheNames.length > 0) {
+                    return caches.open(cacheNames[0]);
+                }
+            }).then(cache => {
+                if (cache) {
+                    return cache.keys();
+                }
+            }).then(keys => {
+                if (keys) {
+                    console.log('📁 Archivos en cache:', keys.length);
+                }
+            }).catch(err => console.warn('⚠️ Error verificando cache:', err));
         }
     }, 4000);
 </script>
