@@ -1038,10 +1038,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#0a0f1c',
+    overflow: 'hidden',
   },
   fullScroll: {
     flex: 1,
     width: '100%',
+    overflow: 'scroll',
   },
   centeredContent: {
     alignItems: 'center',
@@ -1911,21 +1913,26 @@ const styles = StyleSheet.create({
   menuScrollContent: {
     paddingBottom: 100,
     paddingHorizontal: 20,
+    minHeight: '100%',
   },
   playersScrollContent: {
     paddingBottom: 100,
     paddingHorizontal: 20,
+    minHeight: '100%',
   },
   roleScrollContent: {
     paddingBottom: 100,
     paddingHorizontal: 20,
+    minHeight: '100%',
   },
   gameOverScrollContent: {
     paddingBottom: 100,
     paddingHorizontal: 20,
+    minHeight: '100%',
   },
   gameScrollContent: {
     paddingBottom: 150,
+    minHeight: '100%',
   },
 
   // Estilos para el contenedor principal y botón de nuevo juego
