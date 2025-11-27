@@ -9,38 +9,31 @@ console.log('🔧 Configurando build para GitHub Pages...');
 const { execSync } = require('child_process');
 
 try {
-  console.log('📦 Ejecutando expo export con --clear y --reset-cache...');
+  console.log('📦 Ejecutando expo export con --clear y --no-minify...');
   execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
   
-  // 2. Añadir query string al JS PRIMERO (antes de copiar index.html)
+  // 2. Añadir query string al JS para forzar recarga
   console.log('🔄 Añadiendo cache buster al JavaScript...');
   const distIndexPath = path.join(__dirname, 'dist', 'index.html');
   let indexContent = fs.readFileSync(distIndexPath, 'utf8');
-  console.log('📄 Contenido original:', indexContent.substring(0, 500));
+  console.log('📄 HTML original (primeros 500 chars):', indexContent.substring(0, 500));
   
   const timestamp = Date.now();
   const originalLength = indexContent.length;
+  
+  // Reemplazar TODAS las referencias a .js con ?v=timestamp
   indexContent = indexContent.replace(
-    /AppEntry-([a-z0-9]+)\.js/g,
-    `AppEntry-$1.js?v=${timestamp}`
+    /\.js"/g,
+    `.js?v=${timestamp}"`
   );
   
-  console.log('📄 Contenido modificado:', indexContent.substring(0, 500));
+  console.log('📄 HTML modificado (primeros 500 chars):', indexContent.substring(0, 500));
   console.log(`📊 Tamaño: ${originalLength} -> ${indexContent.length}`);
   
   fs.writeFileSync(distIndexPath, indexContent);
-  console.log(`✅ Cache buster añadido: ?v=${timestamp}`);
+  console.log(`✅ Cache buster añadido a TODOS los .js: ?v=${timestamp}`);
   
-  // 3. DESPUÉS sobrescribir con nuestro index.html personalizado SI existe
-  console.log('📝 Verificando index.html personalizado...');
-  const customIndexPath = path.join(__dirname, 'index.html');
-  
-  if (fs.existsSync(customIndexPath)) {
-    console.log('⚠️ index.html personalizado encontrado, pero ya aplicamos cache buster');
-    // NO lo copiamos para no perder el cache buster
-  }
-  
-  // 4. Verificar que index.html existe en dist
+  // 3. Verificar que index.html existe
   if (!fs.existsSync(distIndexPath)) {
     throw new Error('index.html no fue generado por expo export');
   }
