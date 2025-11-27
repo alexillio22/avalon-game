@@ -9,8 +9,8 @@ console.log('🔧 Configurando build para GitHub Pages...');
 const { execSync } = require('child_process');
 
 try {
-  console.log('📦 Ejecutando expo export...');
-  execSync('npx expo export -p web --output-dir dist', { stdio: 'inherit' });
+  console.log('📦 Ejecutando expo export con --clear...');
+  execSync('npx expo export -p web --output-dir dist --clear', { stdio: 'inherit' });
   
   // 2. SOBRESCRIBIR con nuestro index.html personalizado
   console.log('📝 Copiando index.html personalizado...');
