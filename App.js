@@ -154,10 +154,15 @@ export default function App() {
                       style={styles.nameInput}
                       value={editingName}
                       onChangeText={setEditingName}
+                      onFocus={(e) => {
+                        // Seleccionar todo el texto al hacer focus
+                        if (e.target && e.target.select) {
+                          e.target.select();
+                        }
+                      }}
                       placeholder="Nombre del jugador"
                       placeholderTextColor="#888"
                       autoFocus={true}
-                      selectTextOnFocus={true}
                       maxLength={20}
                     />
                     <View style={styles.editButtons}>
