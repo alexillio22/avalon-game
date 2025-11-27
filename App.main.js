@@ -608,8 +608,8 @@ export default function App() {
                   {currentPlayer.roleInfo.description}
                 </Text>
                 
-                {/* Información que puede ver */}
-                {playerVision.length > 0 && (
+                {/* Información que puede ver - Solo para buenos con visión especial */}
+                {playerVision.length > 0 && currentPlayer.roleInfo.team === 'good' && (
                   <View style={styles.visionContainer}>
                     <Text style={styles.visionTitle}>
                       👁️ {currentPlayer.role === 'PERCIVAL' ? 'Ves a estos magos (¿quién es quién?)' : 'Puedes ver:'}
@@ -627,7 +627,7 @@ export default function App() {
                   </View>
                 )}
                 
-                {/* Información del equipo malo */}
+                {/* Información del equipo malo - Solo para malos */}
                 {evilTeamInfo.length > 0 && (
                   <View style={styles.teamContainer}>
                     <Text style={styles.teamTitle}>⚡ Tus compañeros malvados:</Text>
@@ -1605,7 +1605,7 @@ const styles = StyleSheet.create({
   },
   roleContainer: {
     backgroundColor: '#2d1810',
-    padding: 25,
+    padding: 18,
     borderRadius: 15,
     alignItems: 'center',
     borderWidth: 3,
@@ -1613,83 +1613,83 @@ const styles = StyleSheet.create({
     maxWidth: 380,
   },
   roleImageCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    marginBottom: 15,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    marginBottom: 10,
     borderWidth: 3,
     borderColor: '#ffd700',
   },
   roleEmoji: {
-    fontSize: 50,
-    marginBottom: 10,
+    fontSize: 38,
+    marginBottom: 6,
   },
   roleName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ffd700',
-    marginBottom: 8,
+    marginBottom: 5,
     textAlign: 'center',
   },
   roleTeam: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#a8c776',
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: 'center',
   },
   roleDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#ffffff',
-    marginBottom: 20,
+    marginBottom: 12,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 17,
   },
   visionContainer: {
     backgroundColor: '#0a0f1c',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
     width: '100%',
   },
   visionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#8b9dc3',
-    marginBottom: 8,
+    marginBottom: 5,
     textAlign: 'center',
   },
   visionText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#ffffff',
-    marginBottom: 5,
+    marginBottom: 3,
     textAlign: 'center',
   },
   mysteryText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#ffd700',
-    marginTop: 10,
+    marginTop: 6,
     textAlign: 'center',
     fontStyle: 'italic',
-    lineHeight: 16,
+    lineHeight: 14,
   },
   teamContainer: {
     backgroundColor: '#4d1f1f',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
     width: '100%',
   },
   teamTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#ff9999',
-    marginBottom: 8,
+    marginBottom: 5,
     textAlign: 'center',
   },
   teamText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#ffffff',
-    marginBottom: 5,
+    marginBottom: 3,
     textAlign: 'center',
   },
   nextButton: {
