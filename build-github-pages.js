@@ -9,8 +9,9 @@ console.log('🔧 Configurando build para GitHub Pages...');
 const { execSync } = require('child_process');
 
 try {
-  console.log('📦 Ejecutando expo export con --clear y --no-minify...');
-  execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
+  console.log('📦 Ejecutando expo export...');
+  // Usar --public-url para evitar el prefijo _expo
+  execSync('EXPO_USE_STATIC_RENDERING=true npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
   
   // 2. Añadir query string al JS para forzar recarga
   console.log('🔄 Añadiendo cache buster al JavaScript...');
