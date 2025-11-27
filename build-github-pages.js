@@ -16,11 +16,18 @@ try {
   console.log('🔄 Añadiendo cache buster al JavaScript...');
   const distIndexPath = path.join(__dirname, 'dist', 'index.html');
   let indexContent = fs.readFileSync(distIndexPath, 'utf8');
+  console.log('📄 Contenido original:', indexContent.substring(0, 500));
+  
   const timestamp = Date.now();
+  const originalLength = indexContent.length;
   indexContent = indexContent.replace(
     /AppEntry-([a-z0-9]+)\.js/g,
     `AppEntry-$1.js?v=${timestamp}`
   );
+  
+  console.log('📄 Contenido modificado:', indexContent.substring(0, 500));
+  console.log(`📊 Tamaño: ${originalLength} -> ${indexContent.length}`);
+  
   fs.writeFileSync(distIndexPath, indexContent);
   console.log(`✅ Cache buster añadido: ?v=${timestamp}`);
   
