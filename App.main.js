@@ -474,13 +474,22 @@ export default function App() {
         </View>
 
         <TouchableOpacity 
-          style={styles.addButton}
+          style={[
+            styles.addButton,
+            players.length >= 12 && styles.disabledButton
+          ]}
           onPress={() => {
+            if (players.length >= 12) {
+              Alert.alert('Límite alcanzado', 'El juego permite un máximo de 12 jugadores');
+              return;
+            }
             const newPlayer = `Jugador ${players.length + 1}`;
             setPlayers([...players, newPlayer]);
           }}
         >
-          <Text style={styles.addButtonText}>+ Añadir Jugador</Text>
+          <Text style={styles.addButtonText}>
+            {players.length >= 12 ? '✓ Máximo alcanzado (12)' : '+ Añadir Jugador'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
