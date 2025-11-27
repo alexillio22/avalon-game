@@ -13,13 +13,26 @@ try {
   execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
   
   // Mover archivos de _expo/ a static/ para evitar bloqueo de GitHub Pages
-  console.log('📦 Moviendo archivos de _expo/ a static/...');
+  console.log('📦 Copiando archivos de _expo/static/ a static/...');
   const expoStaticPath = path.join(__dirname, 'dist', '_expo', 'static');
   const distStaticPath = path.join(__dirname, 'dist', 'static');
   
   if (fs.existsSync(expoStaticPath)) {
-    execSync(`cp -r "${expoStaticPath}"/* "${distStaticPath}"/`, { stdio: 'inherit' });
+    // Copiar recursivamente usando función nativa de Node
+    function copyRecursive(src, dest) {
+      if (fs.statSync(src).isDirectory()) {
+        if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+        fs.readdirSync(src).forEach(file => {
+          copyRecursive(path.join(src, file), path.join(dest, file));
+        });
+      } else {
+        fs.copyFileSync(src, dest);
+      }
+    }
+    copyRecursive(expoStaticPath, distStaticPath);
     console.log('✅ Archivos copiados de _expo/static/ a static/');
+  } else {
+    console.log('⚠️ No se encontró _expo/static/, omitiendo copia');
   }
   
   // 2. Añadir query string al JS para forzar recarga
