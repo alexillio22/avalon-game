@@ -9,8 +9,8 @@ console.log('🔧 Configurando build para GitHub Pages...');
 const { execSync } = require('child_process');
 
 try {
-  console.log('📦 Ejecutando expo export con --clear...');
-  execSync('npx expo export -p web --output-dir dist --clear', { stdio: 'inherit' });
+  console.log('📦 Ejecutando expo export con --clear y --reset-cache...');
+  execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
   
   // 2. SOBRESCRIBIR con nuestro index.html personalizado
   console.log('📝 Copiando index.html personalizado...');
@@ -23,6 +23,17 @@ try {
   } else {
     console.log('⚠️ No se encontró index.html personalizado, usando el generado por Expo');
   }
+  
+  // 2.5 Añadir query string al JS para forzar recarga
+  console.log('🔄 Añadiendo cache buster al JavaScript...');
+  let indexContent = fs.readFileSync(distIndexPath, 'utf8');
+  const timestamp = Date.now();
+  indexContent = indexContent.replace(
+    /AppEntry-([a-z0-9]+)\.js/g,
+    `AppEntry-$1.js?v=${timestamp}`
+  );
+  fs.writeFileSync(distIndexPath, indexContent);
+  console.log(`✅ Cache buster añadido: ?v=${timestamp}`);
   
   // 3. Verificar que index.html existe en dist
   if (!fs.existsSync(distIndexPath)) {

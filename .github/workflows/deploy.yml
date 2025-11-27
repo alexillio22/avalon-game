@@ -27,6 +27,10 @@ jobs:
         rm -rf dist
         rm -rf web-build
         rm -rf package-lock.json
+        rm -rf /tmp/metro-*
+        rm -rf /tmp/haste-map-*
+        rm -rf $TMPDIR/metro-* || true
+        rm -rf $TMPDIR/haste-map-* || true
         
     - name: Install dependencies
       run: npm install
