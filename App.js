@@ -78,6 +78,7 @@ export default function App() {
         <View style={styles.centeredContent}>
           <Text style={styles.title}>🏰 AVALON</Text>
           <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
+          <Text style={{color: '#888', fontSize: 10, marginTop: 5}}>v2.0.1 - Build 27/11/2025 20:00</Text>
         </View>
         
         <View style={styles.menuContainer}>
@@ -149,6 +150,9 @@ export default function App() {
               <View key={index} style={styles.playerCard}>
                 {editingPlayer === index ? (
                   // Modo edición
+                  (() => {
+                    console.log('🎯 Renderizando modo edición para jugador:', index, editingName);
+                    return (
                   <View style={styles.editContainer}>
                     <TextInput
                       style={styles.nameInput}
@@ -193,6 +197,8 @@ export default function App() {
                       </TouchableOpacity>
                     </View>
                   </View>
+                    );
+                  })()
                 ) : (
                   // Modo normal
                   <>
