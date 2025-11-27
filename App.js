@@ -69,11 +69,16 @@ export default function App() {
 
   // Pantalla del menú principal
   const MenuScreen = () => (
-    <View style={styles.container}>
-      <Text style={styles.title}>🏰 AVALON</Text>
-      <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
-      
-      <View style={styles.menuContainer}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={true}
+      >
+        <Text style={styles.title}>🏰 AVALON</Text>
+        <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
+        
+        <View style={styles.menuContainer}>
         <TouchableOpacity 
           style={styles.menuButton} 
           onPress={() => setCurrentScreen('players')}
@@ -98,7 +103,8 @@ export default function App() {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 
   // Función para guardar el nombre editado
@@ -673,12 +679,17 @@ export default function App() {
     }
 
     return (
-      <ScrollView style={styles.gameScrollView}>
-        <View style={styles.container}>
-          <Text style={styles.title}>⚔️ MISIÓN {gameState.currentMission}</Text>
-          <Text style={styles.subtitle}>
-            Líder: {getCurrentLeader()?.name} | Equipo: {getMissionSize()} jugadores
-          </Text>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.gameScrollView}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>⚔️ MISIÓN {gameState.currentMission}</Text>
+            <Text style={styles.subtitle}>
+              Líder: {getCurrentLeader()?.name} | Equipo: {getMissionSize()} jugadores
+            </Text>
           
           {/* Progreso de misiones */}
           <View style={styles.missionProgress}>
@@ -953,8 +964,12 @@ export default function App() {
               </View>
             </View>
           )}
-        </View>
-      </ScrollView>
+          
+          {/* Espaciado adicional al final para asegurar que todo sea visible */}
+          <View style={{ height: 100 }} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     );
   };
 
@@ -1041,6 +1056,8 @@ const styles = StyleSheet.create({
   menuContainer: {
     width: '100%',
     maxWidth: 400,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
   menuButton: {
     backgroundColor: '#2d5016',
@@ -1353,6 +1370,7 @@ const styles = StyleSheet.create({
   gameScrollView: {
     flex: 1,
     backgroundColor: '#0a0f1c',
+    width: '100%',
   },
   missionProgress: {
     flexDirection: 'row',
@@ -1393,6 +1411,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 600,
     padding: 20,
+    marginBottom: 20,
   },
   phaseTitle: {
     fontSize: 20,
@@ -1451,6 +1470,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 600,
     padding: 20,
+    marginBottom: 20,
   },
   voterCard: {
     backgroundColor: '#1e2a4a',
@@ -1869,7 +1889,8 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     flexGrow: 1,
-    paddingBottom: 20, // Volver al padding original
+    paddingBottom: 120, // Más espacio para asegurar que todos los botones sean visibles
+    paddingHorizontal: 10,
   },
 
   // Estilos para el contenedor principal y botón de nuevo juego
