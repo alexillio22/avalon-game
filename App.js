@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
 
@@ -8,7 +8,22 @@ export default function App() {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [gameAssignments, setGameAssignments] = useState([]);
+  const inputRef = useRef(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  
+  // Efecto para seleccionar el texto al editar
+  useEffect(() => {
+    if (editingPlayer !== null && inputRef.current) {
+      // Timeout para asegurar que el input está renderizado
+      setTimeout(() => {
+        const input = inputRef.current;
+        if (input && input.setSelectionRange) {
+          input.focus();
+          input.setSelectionRange(0, editingName.length);
+        }
+      }, 100);
+    }
+  }, [editingPlayer, editingName]);
   
   // Estados para efectos visuales
   const [lastVotePressed, setLastVotePressed] = useState(null); // 'success' o 'fail'
@@ -151,12 +166,12 @@ export default function App() {
                   // Modo edición
                   <View style={styles.editContainer}>
                     <TextInput
+                      ref={inputRef}
                       style={styles.nameInput}
                       value={editingName}
                       onChangeText={setEditingName}
                       placeholder="Nombre del jugador"
                       placeholderTextColor="#888"
-                      autoFocus
                       selectTextOnFocus={true}
                       maxLength={20}
                     />
