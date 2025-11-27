@@ -25,7 +25,6 @@ try {
   }
   
   // 3. Verificar que index.html existe en dist
-  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
   if (!fs.existsSync(distIndexPath)) {
     throw new Error('index.html no fue generado por expo export');
   }
