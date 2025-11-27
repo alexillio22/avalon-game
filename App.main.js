@@ -9,9 +9,9 @@ const BUILD_ID = 'build-v4-20251127';
 const getRoleImage = (player) => {
   const role = player.role;
   
-  // Mapeo de imágenes usando rutas que Expo genera (sin el assets/ del inicio)
+  // Mapeo de imágenes usando nombres de archivo simples
   const imageMap = {
-    MERLIN: 'merlin.331b8b926f4617c2a56f79bf002bbe83.png',
+    MERLIN: 'merlin.png',
     PERCIVAL: 'percival.png',
     ASESINO: 'asesino.png',
     MORGANA: 'morgana.png',
