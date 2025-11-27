@@ -10,17 +10,32 @@ const { execSync } = require('child_process');
 
 try {
   console.log('📦 Ejecutando expo export...');
-  // Usar --public-url para evitar el prefijo _expo
-  execSync('EXPO_USE_STATIC_RENDERING=true npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
+  execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
+  
+  // Mover archivos de _expo/ a static/ para evitar bloqueo de GitHub Pages
+  console.log('📦 Moviendo archivos de _expo/ a static/...');
+  const expoStaticPath = path.join(__dirname, 'dist', '_expo', 'static');
+  const distStaticPath = path.join(__dirname, 'dist', 'static');
+  
+  if (fs.existsSync(expoStaticPath)) {
+    execSync(`cp -r "${expoStaticPath}"/* "${distStaticPath}"/`, { stdio: 'inherit' });
+    console.log('✅ Archivos copiados de _expo/static/ a static/');
+  }
   
   // 2. Añadir query string al JS para forzar recarga
-  console.log('🔄 Añadiendo cache buster al JavaScript...');
+  console.log('🔄 Modificando rutas y añadiendo cache buster...');
   const distIndexPath = path.join(__dirname, 'dist', 'index.html');
   let indexContent = fs.readFileSync(distIndexPath, 'utf8');
   console.log('📄 HTML original (primeros 500 chars):', indexContent.substring(0, 500));
   
   const timestamp = Date.now();
   const originalLength = indexContent.length;
+  
+  // Cambiar rutas de _expo/static/ a static/
+  indexContent = indexContent.replace(
+    /_expo\/static\//g,
+    'static/'
+  );
   
   // Reemplazar TODAS las referencias a .js con ?v=timestamp
   indexContent = indexContent.replace(
@@ -32,7 +47,7 @@ try {
   console.log(`📊 Tamaño: ${originalLength} -> ${indexContent.length}`);
   
   fs.writeFileSync(distIndexPath, indexContent);
-  console.log(`✅ Cache buster añadido a TODOS los .js: ?v=${timestamp}`);
+  console.log(`✅ Rutas cambiadas a static/ y cache buster añadido: ?v=${timestamp}`);
   
   // 3. Verificar que index.html existe
   if (!fs.existsSync(distIndexPath)) {
