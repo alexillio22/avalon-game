@@ -12,12 +12,19 @@ try {
   console.log('📦 Ejecutando expo export...');
   execSync('npx expo export -p web --output-dir dist', { stdio: 'inherit' });
   
-  // 2. Crear .nojekyll para evitar problemas con Jekyll
+  // 2. Verificar que index.html existe en dist
+  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
+  if (!fs.existsSync(distIndexPath)) {
+    throw new Error('index.html no fue generado por expo export');
+  }
+  console.log('✅ index.html generado correctamente');
+  
+  // 3. Crear .nojekyll para evitar problemas con Jekyll
   const nojekyllPath = path.join(__dirname, 'dist', '.nojekyll');
   fs.writeFileSync(nojekyllPath, '');
   console.log('✅ Archivo .nojekyll creado');
   
-  // 3. Actualizar el manifest.json para GitHub Pages
+  // 4. Actualizar el manifest.json para GitHub Pages
   const manifestPath = path.join(__dirname, 'dist', 'manifest.json');
   if (fs.existsSync(manifestPath)) {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -27,7 +34,7 @@ try {
     console.log('✅ Manifest.json actualizado para GitHub Pages');
   }
   
-  // 4. Crear CNAME si se especifica un dominio personalizado
+  // 5. Crear CNAME si se especifica un dominio personalizado
   const customDomain = process.env.CUSTOM_DOMAIN;
   if (customDomain) {
     const cnamePath = path.join(__dirname, 'dist', 'CNAME');
