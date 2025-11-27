@@ -100,12 +100,13 @@
     <div id="root"></div>
     
     <script>
-        // Registrar Service Worker para PWA
+        // DESACTIVAR Service Worker temporalmente para forzar actualización
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('🗑️ Service Worker desregistrado');
+                }
             });
         }
         

@@ -102,26 +102,13 @@
     <div id="root"></div>
     
     <script>
-        // 🚀 Service Worker Enhanced con precaching estratégico
+        // 🗑️ DESACTIVAR Service Worker temporalmente para forzar actualización
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw-enhanced.js')
-                    .then(registration => {
-                        console.log('✅ SW Enhanced registrado exitosamente', registration.scope);
-                        
-                        // Escuchar actualizaciones del Service Worker
-                        registration.addEventListener('updatefound', () => {
-                            console.log('🔄 Nueva versión del SW encontrada');
-                        });
-                    })
-                    .catch(error => {
-                        console.error('❌ SW Enhanced registration failed:', error);
-                    });
-                
-                // Escuchar mensajes del Service Worker
-                navigator.serviceWorker.addEventListener('message', event => {
-                    console.log('📨 Mensaje del SW:', event.data);
-                });
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('🗑️ Service Worker desregistrado');
+                }
             });
         } else {
             console.warn('⚠️ Service Worker no soportado en este navegador');
