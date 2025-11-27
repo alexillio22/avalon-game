@@ -31,15 +31,6 @@ export const ROLES = {
     winCondition: 'Los buenos completan 3 misiones'
   },
   
-  ALDEANO_BUENO: {
-    name: 'Aldeano de Arturo',
-    emoji: '🛡️',
-    team: 'good',
-    description: 'Ciudadano leal sin poderes especiales',
-    canSee: [], // No ve a nadie
-    winCondition: 'Los buenos completan 3 misiones'
-  },
-  
   // MALOS
   ASESINO: {
     name: 'Asesino',
@@ -131,21 +122,21 @@ export const GAME_CONFIG = {
     mission4RequiresTwoFails: true
   },
   10: {
-    roles: ['MERLIN', 'PERCIVAL', 'LEAL_SIERVO', 'LEAL_SIERVO', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON'],
+    roles: ['MERLIN', 'PERCIVAL', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON'],
     goodCount: 6,
     evilCount: 4,
     missions: [3, 4, 4, 5, 5],
     mission4RequiresTwoFails: true
   },
   11: {
-    roles: ['MERLIN', 'PERCIVAL', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON', 'ALDEANO_MALO'],
+    roles: ['MERLIN', 'PERCIVAL', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON', 'ALDEANO_MALO'],
     goodCount: 6,
     evilCount: 5,
     missions: [3, 4, 4, 5, 5],
     mission4RequiresTwoFails: true
   },
   12: {
-    roles: ['MERLIN', 'PERCIVAL', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ALDEANO_BUENO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON', 'ALDEANO_MALO', 'ALDEANO_MALO'],
+    roles: ['MERLIN', 'PERCIVAL', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'LEAL_SIERVO', 'ASESINO', 'MORGANA', 'MORDRED', 'OBERON', 'ALDEANO_MALO', 'ALDEANO_MALO'],
     goodCount: 6,
     evilCount: 6,
     missions: [3, 4, 4, 5, 5],
@@ -165,12 +156,29 @@ export function assignRoles(players) {
   // Mezclar roles aleatoriamente
   const shuffledRoles = [...config.roles].sort(() => Math.random() - 0.5);
   
+  // Contador para roles con múltiples imágenes
+  const roleCounters = {
+    LEAL_SIERVO: 0,
+    ALDEANO_MALO: 0
+  };
+  
   // Asignar a jugadores
-  const assignments = players.map((playerName, index) => ({
-    name: playerName,
-    role: shuffledRoles[index],
-    roleInfo: ROLES[shuffledRoles[index]]
-  }));
+  const assignments = players.map((playerName, index) => {
+    const role = shuffledRoles[index];
+    const assignment = {
+      name: playerName,
+      role: role,
+      roleInfo: ROLES[role]
+    };
+    
+    // Asignar índice de imagen para roles con variantes
+    if (role === 'LEAL_SIERVO' || role === 'ALDEANO_MALO') {
+      assignment.imageIndex = roleCounters[role];
+      roleCounters[role]++;
+    }
+    
+    return assignment;
+  });
   
   return assignments;
 }

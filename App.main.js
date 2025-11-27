@@ -1,9 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView, Image } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
+
+// Mapeo de imágenes de roles
+const ROLE_IMAGES = {
+  MERLIN: require('./assets/roles/merlin.png'),
+  PERCIVAL: require('./assets/roles/percival.png'),
+  ASESINO: require('./assets/roles/asesino.png'),
+  MORGANA: require('./assets/roles/morgana.png'),
+  MORDRED: require('./assets/roles/mordred.png'),
+  OBERON: require('./assets/roles/oberon.png'),
+  LEAL_SIERVO: [
+    require('./assets/roles/loyalservant1.png'),
+    require('./assets/roles/loyalservant2.png'),
+    require('./assets/roles/loyalservant3.png'),
+    require('./assets/roles/loyalservant4.png')
+  ],
+  ALDEANO_MALO: [
+    require('./assets/roles/minion1.png'),
+    require('./assets/roles/minion2.png')
+  ]
+};
 
 // FORCE REBUILD v3
 const BUILD_ID = 'build-v3-20251127';
+
+// Función para obtener la imagen del rol
+const getRoleImage = (player) => {
+  const role = player.role;
+  const roleImages = ROLE_IMAGES[role];
+  
+  if (!roleImages) return null;
+  
+  // Si es un array (roles con múltiples imágenes), usar el índice asignado
+  if (Array.isArray(roleImages)) {
+    return roleImages[player.imageIndex || 0];
+  }
+  
+  // Si es una sola imagen, devolverla directamente
+  return roleImages;
+};
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('menu');
@@ -543,8 +579,17 @@ export default function App() {
             ) : (
               // Pantalla de rol revelado
               <View style={styles.roleContainer}>
-                <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
-                <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
+                <View style={styles.roleHeader}>
+                  <Image 
+                    source={getRoleImage(currentPlayer)}
+                    style={styles.roleImage}
+                    resizeMode="contain"
+                  />
+                  <View style={styles.roleTextContainer}>
+                    <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
+                    <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
+                  </View>
+                </View>
                 <Text style={styles.roleTeam}>
                   Equipo: {currentPlayer.roleInfo.team === 'good' ? '👑 Buenos' : '⚡ Malos'}
                 </Text>
@@ -1556,15 +1601,32 @@ const styles = StyleSheet.create({
     borderColor: '#ffd700',
     maxWidth: 380,
   },
-  roleEmoji: {
-    fontSize: 60,
+  roleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 15,
+    width: '100%',
+  },
+  roleImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginRight: 15,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
+  roleTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  roleEmoji: {
+    fontSize: 40,
+    marginBottom: 5,
   },
   roleName: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#ffd700',
-    marginBottom: 8,
     textAlign: 'center',
   },
   roleTeam: {
