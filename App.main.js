@@ -2,43 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView, Image } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
 
-// Mapeo de imágenes de roles
-const ROLE_IMAGES = {
-  MERLIN: require('./assets/roles/merlin.png'),
-  PERCIVAL: require('./assets/roles/percival.png'),
-  ASESINO: require('./assets/roles/asesino.png'),
-  MORGANA: require('./assets/roles/morgana.png'),
-  MORDRED: require('./assets/roles/mordred.png'),
-  OBERON: require('./assets/roles/oberon.png'),
-  LEAL_SIERVO: [
-    require('./assets/roles/loyalservant1.png'),
-    require('./assets/roles/loyalservant2.png'),
-    require('./assets/roles/loyalservant3.png'),
-    require('./assets/roles/loyalservant4.png')
-  ],
-  ALDEANO_MALO: [
-    require('./assets/roles/minion1.png'),
-    require('./assets/roles/minion2.png')
-  ]
-};
-
-// FORCE REBUILD v3
-const BUILD_ID = 'build-v3-20251127';
+// FORCE REBUILD v4
+const BUILD_ID = 'build-v4-20251127';
 
 // Función para obtener la imagen del rol
 const getRoleImage = (player) => {
   const role = player.role;
-  const roleImages = ROLE_IMAGES[role];
   
+  // Mapeo de imágenes usando rutas que Expo genera (sin el assets/ del inicio)
+  const imageMap = {
+    MERLIN: 'merlin.331b8b926f4617c2a56f79bf002bbe83.png',
+    PERCIVAL: 'percival.png',
+    ASESINO: 'asesino.png',
+    MORGANA: 'morgana.png',
+    MORDRED: 'mordred.png',
+    OBERON: 'oberon.png',
+    LEAL_SIERVO: [
+      'loyalservant1.png',
+      'loyalservant2.png',
+      'loyalservant3.png',
+      'loyalservant4.png'
+    ],
+    ALDEANO_MALO: [
+      'minion1.png',
+      'minion2.png'
+    ]
+  };
+  
+  const roleImages = imageMap[role];
   if (!roleImages) return null;
   
   // Si es un array (roles con múltiples imágenes), usar el índice asignado
   if (Array.isArray(roleImages)) {
-    return roleImages[player.imageIndex || 0];
+    const imageName = roleImages[player.imageIndex || 0];
+    return { uri: `/avalon-game/assets/roles/${imageName}` };
   }
   
   // Si es una sola imagen, devolverla directamente
-  return roleImages;
+  return { uri: `/avalon-game/assets/roles/${roleImages}` };
 };
 
 export default function App() {

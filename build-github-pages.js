@@ -111,6 +111,27 @@ try {
     }
   }
   
+  // Copiar assets/roles/ a dist/assets/roles/ (sin duplicar)
+  console.log('📦 Copiando assets/roles/ a dist/assets/roles/...');
+  const assetsRolesSource = path.join(__dirname, 'assets', 'roles');
+  const assetsRolesDest = path.join(__dirname, 'dist', 'assets', 'roles');
+  
+  function copyRecursive(src, dest) {
+    if (fs.statSync(src).isDirectory()) {
+      if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+      fs.readdirSync(src).forEach(file => {
+        copyRecursive(path.join(src, file), path.join(dest, file));
+      });
+    } else {
+      fs.copyFileSync(src, dest);
+    }
+  }
+  
+  if (fs.existsSync(assetsRolesSource)) {
+    copyRecursive(assetsRolesSource, assetsRolesDest);
+    console.log('✅ assets/roles/ copiado a dist/assets/roles/');
+  }
+  
   // 3. Verificar que index.html existe
   if (!fs.existsSync(distIndexPath)) {
     throw new Error('index.html no fue generado por expo export');
