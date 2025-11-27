@@ -1,0 +1,2081 @@
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView } from 'react-native';
+import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
+
+// FORCE REBUILD v3
+const BUILD_ID = 'build-v3-20251127';
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('menu');
+  const [players, setPlayers] = useState([]);
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const [editingName, setEditingName] = useState('');
+  const [gameAssignments, setGameAssignments] = useState([]);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  
+  // Estados para efectos visuales
+  const [lastVotePressed, setLastVotePressed] = useState(null); // 'success' o 'fail'
+  const [voteConfirmed, setVoteConfirmed] = useState(false);
+  
+  // Estado del juego
+  const [gameState, setGameState] = useState({
+    currentMission: 1,
+    missionResults: [], // true = éxito, false = fracaso
+    currentLeader: 0, // Índice del líder actual
+    selectedTeam: [], // Jugadores seleccionados para la misión
+    votingPhase: 'teamSelection', // 'teamSelection', 'teamVoting', 'secretMissionVoting', 'revealVotes', 'results'
+    teamVotes: [], // Votos de aprobación del equipo (por defecto todos en true)
+    missionVotes: [], // Votos de la misión
+    currentSecretVoter: 0, // Índice del jugador votando en secreto
+    failedProposals: 0, // Propuestas de equipo rechazadas consecutivas
+    gameOver: false,
+    winner: null
+  });
+
+  // Limpiar efectos visuales cuando cambie el votante
+  useEffect(() => {
+    setLastVotePressed(null);
+    setVoteConfirmed(false);
+  }, [gameState.currentSecretVoter]);
+
+  // Función para reiniciar completamente el juego
+  const resetGame = () => {
+    setShowResetConfirm(true);
+  };
+
+  // Función para confirmar el reseteo
+  const confirmReset = () => {
+    // Resetear todos los estados del juego pero mantener jugadores
+    setGameAssignments([]);
+    setGameState({
+      currentMission: 1,
+      missionResults: [],
+      currentLeader: 0,
+      selectedTeam: [],
+      votingPhase: 'teamSelection',
+      teamVotes: [],
+      missionVotes: [],
+      currentSecretVoter: 0,
+      failedProposals: 0,
+      gameOver: false,
+      winner: null
+    });
+    // Cambiar a la pantalla del menú
+    setCurrentScreen('menu');
+    setShowResetConfirm(false);
+  };
+
+  // Función para cancelar el reseteo
+  const cancelReset = () => {
+    setShowResetConfirm(false);
+  };
+
+  // Pantalla del menú principal
+  const MenuScreen = () => (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView 
+        style={styles.fullScroll}
+        contentContainerStyle={styles.menuScrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        <View style={styles.centeredContent}>
+          <Text style={styles.title}>🏰 AVALON</Text>
+          <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
+          <Text style={{color: '#888', fontSize: 10, marginTop: 5}}>v2.0.1 - Build 27/11/2025 20:00</Text>
+        </View>
+        
+        <View style={styles.menuContainer}>
+        <TouchableOpacity 
+          style={styles.menuButton} 
+          onPress={() => setCurrentScreen('players')}
+        >
+          <Text style={styles.menuButtonText}>👥 Gestionar Jugadores</Text>
+          <Text style={styles.menuButtonSubtext}>
+            {players.length > 0 ? `${players.length} jugadores` : 'Añadir jugadores'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.menuButton, (players.length < 5 || players.length > 12) && styles.disabledButton]} 
+          onPress={() => players.length >= 5 && players.length <= 12 && startGame()}
+        >
+          <Text style={[styles.menuButtonText, (players.length < 5 || players.length > 12) && styles.disabledText]}>
+            ⚔️ Iniciar Partida
+          </Text>
+          <Text style={styles.menuButtonSubtext}>
+            {players.length < 5 ? 'Mínimo 5 jugadores' : 
+             players.length > 12 ? 'Máximo 12 jugadores' : 
+             `¡Listo para jugar! (${players.length} jugadores)`}
+          </Text>
+        </TouchableOpacity>
+      </View>
+        </ScrollView>
+    </SafeAreaView>
+  );
+
+  // Función para guardar el nombre editado
+  const savePlayerName = () => {
+    if (editingName.trim() === '') {
+      Alert.alert('Error', 'El nombre no puede estar vacío');
+      return;
+    }
+    
+    const updatedPlayers = [...players];
+    updatedPlayers[editingPlayer] = editingName.trim();
+    setPlayers(updatedPlayers);
+    setEditingPlayer(null);
+    setEditingName('');
+  };
+
+  // Función para cancelar la edición
+  const cancelEdit = () => {
+    setEditingPlayer(null);
+    setEditingName('');
+  };
+
+  // Pantalla de gestión de jugadores
+  const PlayersScreen = () => (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.centeredContent}>
+        <Text style={styles.title}>👥 Jugadores</Text>
+      </View>
+      
+      <ScrollView 
+        style={styles.fullScroll}
+        contentContainerStyle={styles.playersScrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        <View style={styles.playersContainer}>
+          {players.length === 0 ? (
+            <Text style={styles.emptyText}>No hay jugadores añadidos</Text>
+          ) : (
+            players.map((player, index) => (
+              <View key={index} style={styles.playerCard}>
+                {editingPlayer === index ? (
+                  // Modo edición
+                  (() => {
+                    console.log('🎯 Renderizando modo edición para jugador:', index, editingName);
+                    return (
+                  <View style={styles.editContainer}>
+                    <TextInput
+                      style={styles.nameInput}
+                      value={editingName}
+                      onChangeText={setEditingName}
+                      onFocus={(e) => {
+                        // Seleccionar todo el texto al hacer focus
+                        setTimeout(() => {
+                          if (e.target && e.target.select) {
+                            e.target.select();
+                          } else if (e.target && e.target.setSelectionRange) {
+                            e.target.setSelectionRange(0, e.target.value.length);
+                          }
+                        }, 10);
+                      }}
+                      placeholder="Nombre del jugador"
+                      placeholderTextColor="#888"
+                      autoFocus={true}
+                      maxLength={20}
+                    />
+                    <View style={styles.editButtons}>
+                      <TouchableOpacity 
+                        onPress={() => {
+                          console.log('🗑️ Borrando texto del input');
+                          setEditingName('');
+                        }}
+                        style={styles.clearButton}
+                      >
+                        <Text style={styles.clearButtonText}>❌</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={savePlayerName}
+                        style={styles.saveButton}
+                      >
+                        <Text style={styles.saveButtonText}>✓</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={cancelEdit}
+                        style={styles.cancelButton}
+                      >
+                        <Text style={styles.cancelButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                    );
+                  })()
+                ) : (
+                  // Modo normal
+                  <>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setEditingPlayer(index);
+                        setEditingName(player);
+                      }}
+                      style={styles.nameContainer}
+                    >
+                      <Text style={styles.playerName}>{player}</Text>
+                      <Text style={styles.editHint}>Toca para editar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => setPlayers(players.filter((_, i) => i !== index))}
+                      style={styles.removeButton}
+                    >
+                      <Text style={styles.removeButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            ))
+          )}
+        </View>
+
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => {
+            const newPlayer = `Jugador ${players.length + 1}`;
+            setPlayers([...players, newPlayer]);
+          }}
+        >
+          <Text style={styles.addButtonText}>+ Añadir Jugador</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => setCurrentScreen('menu')}
+        >
+          <Text style={styles.backButtonText}>← Volver al Menú</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+
+  // Función para iniciar el juego y asignar roles
+  const startGame = () => {
+    try {
+      const assignments = assignRoles(players);
+      setGameAssignments(assignments);
+      
+      // Obtener configuración del juego
+      const gameConfig = GAME_CONFIG[players.length];
+      
+      // Inicializar estado del juego
+      const randomLeader = Math.floor(Math.random() * players.length);
+      setGameState({
+        currentMission: 1,
+        missionResults: [],
+        currentLeader: randomLeader,
+        selectedTeam: [],
+        votingPhase: 'teamSelection',
+        teamVotes: [],
+        missionVotes: [],
+        currentSecretVoter: 0,
+        failedProposals: 0,
+        gameOver: false,
+        winner: null,
+        gameConfig: gameConfig // Añadir configuración del juego al estado
+      });
+      
+      setCurrentScreen('roleReveal');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  // Pantalla de asignación de roles
+  const RoleRevealScreen = () => {
+    const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+    const [showRole, setShowRole] = useState(false);
+    
+    const currentPlayer = gameAssignments[currentPlayerIndex];
+    
+    if (!currentPlayer) return null;
+    
+    const playerVision = getPlayerVision(currentPlayer, gameAssignments);
+    const evilTeamInfo = getEvilTeamInfo(currentPlayer, gameAssignments);
+    
+    const nextPlayer = () => {
+      setShowRole(false);
+      if (currentPlayerIndex < gameAssignments.length - 1) {
+        setCurrentPlayerIndex(currentPlayerIndex + 1);
+      } else {
+        setCurrentScreen('game');
+      }
+    };
+    
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centeredContent}>
+          <Text style={styles.title}>🎭 ASIGNACIÓN DE ROLES</Text>
+          <Text style={styles.subtitle}>
+            Jugador {currentPlayerIndex + 1} de {gameAssignments.length}
+          </Text>
+        </View>
+        
+        <ScrollView 
+          style={styles.fullScroll}
+          contentContainerStyle={styles.roleScrollContent}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.roleRevealContainer}>
+            {!showRole ? (
+              // Pantalla de preparación
+              <View style={styles.prepContainer}>
+                <Text style={styles.playerNameBig}>{currentPlayer.name}</Text>
+                <Text style={styles.prepText}>Es tu turno de ver tu rol</Text>
+                <Text style={styles.warningText}>
+                  ⚠️ Asegúrate de que nadie más esté mirando
+                </Text>
+                
+                <TouchableOpacity 
+                  style={styles.revealButton}
+                  onPress={() => setShowRole(true)}
+                >
+                  <Text style={styles.revealButtonText}>👁️ Revelar mi Rol</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              // Pantalla de rol revelado
+              <View style={styles.roleContainer}>
+                <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
+                <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
+                <Text style={styles.roleTeam}>
+                  Equipo: {currentPlayer.roleInfo.team === 'good' ? '👑 Buenos' : '⚡ Malos'}
+                </Text>
+                <Text style={styles.roleDescription}>
+                  {currentPlayer.roleInfo.description}
+                </Text>
+                
+                {/* Información que puede ver */}
+                {playerVision.length > 0 && (
+                  <View style={styles.visionContainer}>
+                    <Text style={styles.visionTitle}>
+                      👁️ {currentPlayer.role === 'PERCIVAL' ? 'Ves a estos magos (¿quién es quién?)' : 'Puedes ver:'}
+                    </Text>
+                    {playerVision.map((visiblePlayer, index) => (
+                      <Text key={index} style={styles.visionText}>
+                        {visiblePlayer.emoji} {visiblePlayer.name} ({visiblePlayer.role})
+                      </Text>
+                    ))}
+                    {currentPlayer.role === 'PERCIVAL' && (
+                      <Text style={styles.mysteryText}>
+                        🤔 Uno es Merlín, el otro es Morgana. ¡Debes averiguar cuál es cuál durante el juego!
+                      </Text>
+                    )}
+                  </View>
+                )}
+                
+                {/* Información del equipo malo */}
+                {evilTeamInfo.length > 0 && (
+                  <View style={styles.teamContainer}>
+                    <Text style={styles.teamTitle}>⚡ Tus compañeros malvados:</Text>
+                    {evilTeamInfo.map((teammate, index) => (
+                      <Text key={index} style={styles.teamText}>
+                        {teammate.emoji} {teammate.name} ({teammate.role})
+                      </Text>
+                    ))}
+                  </View>
+                )}
+                
+                <TouchableOpacity 
+                  style={styles.nextButton}
+                  onPress={nextPlayer}
+                >
+                  <Text style={styles.nextButtonText}>
+                    {currentPlayerIndex < gameAssignments.length - 1 ? 
+                      '➡️ Siguiente Jugador' : '🎮 Comenzar Partida'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  };
+
+  // Funciones auxiliares del juego
+  const getMissionSize = () => {
+    const config = GAME_CONFIG[players.length];
+    return config ? config.missions[gameState.currentMission - 1] : 3;
+  };
+
+  const getCurrentLeader = () => {
+    return gameAssignments[gameState.currentLeader];
+  };
+
+  const selectPlayer = (playerIndex) => {
+    const maxTeamSize = getMissionSize();
+    if (gameState.selectedTeam.includes(playerIndex)) {
+      // Deseleccionar
+      setGameState(prev => ({
+        ...prev,
+        selectedTeam: prev.selectedTeam.filter(i => i !== playerIndex)
+      }));
+    } else if (gameState.selectedTeam.length < maxTeamSize) {
+      // Seleccionar
+      setGameState(prev => ({
+        ...prev,
+        selectedTeam: [...prev.selectedTeam, playerIndex]
+      }));
+    }
+  };
+
+  const startTeamVoting = () => {
+    if (gameState.selectedTeam.length !== getMissionSize()) {
+      Alert.alert('Error', `Debes seleccionar exactamente ${getMissionSize()} jugadores`);
+      return;
+    }
+    // Inicializar todos los votos como "aprobar" por defecto
+    const defaultVotes = new Array(players.length).fill(true);
+    setGameState(prev => ({ 
+      ...prev, 
+      votingPhase: 'teamVoting', 
+      teamVotes: defaultVotes 
+    }));
+  };
+
+  const toggleTeamVote = (playerIndex) => {
+    const newVotes = [...gameState.teamVotes];
+    newVotes[playerIndex] = !newVotes[playerIndex];
+    setGameState(prev => ({ ...prev, teamVotes: newVotes }));
+  };
+
+  const finishTeamVoting = () => {
+    const approvals = gameState.teamVotes.filter(v => v === true).length;
+    const rejections = gameState.teamVotes.filter(v => v === false).length;
+    
+    if (approvals > rejections) {
+      // Equipo aprobado - ir a votación secreta de misión
+      const firstVoter = gameState.selectedTeam[0];
+      setGameState(prev => ({ 
+        ...prev, 
+        votingPhase: 'secretMissionVoting', 
+        currentSecretVoter: firstVoter,
+        missionVotes: []
+      }));
+    } else {
+      // Equipo rechazado
+      const newFailedProposals = gameState.failedProposals + 1;
+      if (newFailedProposals >= 5) {
+        // Los malos ganan si se rechazan 5 propuestas
+        setGameState(prev => ({ 
+          ...prev, 
+          gameOver: true, 
+          winner: 'evil',
+          votingPhase: 'results'
+        }));
+      } else {
+        // Siguiente líder
+        const nextLeader = (gameState.currentLeader + 1) % players.length;
+        setGameState(prev => ({
+          ...prev,
+          currentLeader: nextLeader,
+          selectedTeam: [],
+          votingPhase: 'teamSelection',
+          failedProposals: newFailedProposals,
+          teamVotes: []
+        }));
+      }
+    }
+  };
+
+  const submitSecretMissionVote = (vote) => {
+    // Mostrar efecto visual inmediato
+    setLastVotePressed(vote ? 'success' : 'fail');
+    setVoteConfirmed(true);
+    
+    // Pequeña pausa para mostrar el efecto antes de continuar
+    setTimeout(() => {
+      const newVotes = [...gameState.missionVotes];
+      newVotes[gameState.currentSecretVoter] = vote;
+      
+      // Encontrar siguiente votante en el equipo
+      const currentIndex = gameState.selectedTeam.indexOf(gameState.currentSecretVoter);
+      const nextIndex = currentIndex + 1;
+      
+      if (nextIndex < gameState.selectedTeam.length) {
+        // Siguiente jugador del equipo
+        const nextVoter = gameState.selectedTeam[nextIndex];
+        setGameState(prev => ({
+          ...prev,
+          currentSecretVoter: nextVoter,
+          missionVotes: newVotes
+        }));
+        // Resetear efectos visuales para el siguiente jugador
+        setLastVotePressed(null);
+        setVoteConfirmed(false);
+      } else {
+        // Todos han votado - ir a revelación
+        setGameState(prev => ({
+          ...prev,
+          missionVotes: newVotes,
+          votingPhase: 'revealVotes'
+        }));
+        // Resetear efectos visuales
+        setLastVotePressed(null);
+        setVoteConfirmed(false);
+      }
+    }, 800); // 800ms para mostrar el efecto visual
+  };
+
+  const revealMissionVotes = () => {
+    const teamVotes = gameState.selectedTeam.map(i => gameState.missionVotes[i]).filter(v => v !== undefined);
+    const fails = teamVotes.filter(v => v === false).length;
+    
+    // Aplicar regla especial de la misión 4
+    let missionSuccess;
+    if (gameState.currentMission === 4 && gameState.gameConfig?.mission4RequiresTwoFails) {
+      // En la misión 4 con 7+ jugadores, se necesitan 2 fallos para que ganen los malos
+      missionSuccess = fails < 2;
+    } else {
+      // Regla normal: cualquier fallo hace fracasar la misión
+      missionSuccess = fails === 0;
+    }
+    
+    const newResults = [...gameState.missionResults, missionSuccess];
+    const goodWins = newResults.filter(r => r === true).length;
+    const evilWins = newResults.filter(r => r === false).length;
+    
+    if (goodWins >= 3) {
+      // Los buenos ganan - verificar si pueden asesinar a Merlín
+      const hasAssassin = gameAssignments.some(p => p.role === 'ASESINO');
+      const hasMerlin = gameAssignments.some(p => p.role === 'MERLIN');
+      
+      if (hasAssassin && hasMerlin) {
+        // Fase de asesinato de Merlín
+        setGameState(prev => ({ 
+          ...prev, 
+          missionResults: newResults,
+          votingPhase: 'merlinAssassination'
+        }));
+      } else {
+        // Victoria inmediata de los buenos (sin Asesino o Merlín)
+        setGameState(prev => ({ 
+          ...prev, 
+          missionResults: newResults,
+          gameOver: true, 
+          winner: 'good',
+          votingPhase: 'results'
+        }));
+      }
+    } else if (evilWins >= 3) {
+      // Los malos ganan
+      setGameState(prev => ({ 
+        ...prev, 
+        missionResults: newResults,
+        gameOver: true, 
+        winner: 'evil',
+        votingPhase: 'results'
+      }));
+    } else {
+      // Siguiente misión
+      const nextLeader = (gameState.currentLeader + 1) % players.length;
+      setGameState(prev => ({
+        ...prev,
+        currentMission: prev.currentMission + 1,
+        missionResults: newResults,
+        currentLeader: nextLeader,
+        selectedTeam: [],
+        votingPhase: 'teamSelection',
+        failedProposals: 0,
+        teamVotes: [],
+        missionVotes: [],
+        currentSecretVoter: 0
+      }));
+    }
+  };
+
+  // Función para intentar asesinar a Merlín
+  const attemptMerlinAssassination = (targetIndex) => {
+    const targetPlayer = gameAssignments[targetIndex];
+    const isMerlin = targetPlayer.role === 'MERLIN';
+    
+    // Encontrar quién es realmente Merlín
+    const realMerlinIndex = gameAssignments.findIndex(player => player.role === 'MERLIN');
+    
+    if (isMerlin) {
+      // El Asesino encontró a Merlín - los malos ganan
+      setGameState(prev => ({
+        ...prev,
+        gameOver: true,
+        winner: 'evil',
+        votingPhase: 'results',
+        assassinationTarget: targetIndex,
+        assassinationResult: 'success',
+        realMerlinIndex: realMerlinIndex
+      }));
+    } else {
+      // El Asesino falló - los buenos ganan
+      setGameState(prev => ({
+        ...prev,
+        gameOver: true,
+        winner: 'good',
+        votingPhase: 'results',
+        assassinationTarget: targetIndex,
+        assassinationResult: 'failed',
+        realMerlinIndex: realMerlinIndex
+      }));
+    }
+  };
+
+  // Pantalla de juego principal
+  const GameScreen = () => {
+    if (gameState.gameOver) {
+      return (
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView 
+            style={styles.fullScroll}
+            contentContainerStyle={styles.gameOverScrollContent}
+            showsVerticalScrollIndicator={true}
+          >
+            <View style={styles.centeredContent}>
+              <Text style={styles.title}>
+                {gameState.winner === 'good' ? '👑 ¡LOS BUENOS GANAN!' : '⚡ ¡LOS MALOS GANAN!'}
+              </Text>
+              <Text style={styles.subtitle}>Fin del juego</Text>
+            </View>
+            
+            <View style={styles.gameContainer}>
+              <Text style={styles.gameText}>Resultados de las misiones:</Text>
+              {gameState.missionResults.map((result, index) => (
+                <Text key={index} style={styles.gameText}>
+                  Misión {index + 1}: {result ? '✅ Éxito' : '❌ Fracaso'}
+                </Text>
+              ))}
+              
+              {/* Mostrar información del asesinato de Merlín si ocurrió */}
+              {gameState.assassinationTarget !== undefined && (
+                <View style={styles.assassinationResultContainer}>
+                  <Text style={styles.assassinationResultTitle}>
+                    🗡️ Intento de Asesinato de Merlín
+                  </Text>
+                  <Text style={styles.assassinationResultText}>
+                    🎯 Objetivo elegido: {players[gameState.assassinationTarget]}
+                  </Text>
+                  <Text style={[
+                    styles.assassinationResultText,
+                    gameState.assassinationResult === 'success' 
+                      ? styles.assassinationSuccess 
+                      : styles.assassinationFailed
+                  ]}>
+                    {gameState.assassinationResult === 'success' 
+                      ? '💀 ¡Correcto! Era Merlín. Los malos ganan.' 
+                      : '❌ ¡Incorrecto! No era Merlín. Los buenos ganan.'}
+                  </Text>
+                  {gameState.assassinationResult === 'failed' && gameState.realMerlinIndex !== undefined && (
+                    <Text style={styles.realMerlinReveal}>
+                      🧙‍♂️ El verdadero Merlín era: {players[gameState.realMerlinIndex]}
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {/* Revelar todos los roles al final */}
+              <View style={styles.roleRevealFinal}>
+                <Text style={styles.finalRoleTitle}>🎭 Roles de todos los jugadores:</Text>
+                {gameAssignments.map((player, index) => (
+                  <Text key={index} style={[
+                    styles.finalRoleText,
+                    player.roleInfo.team === 'good' ? styles.goodTeamText : styles.evilTeamText
+                  ]}>
+                    {players[index]}: {player.roleInfo.emoji} {player.roleInfo.name}
+                  </Text>
+                ))}
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => {
+                setCurrentScreen('menu');
+                setGameAssignments([]);
+                setGameState({
+                  currentMission: 1,
+                  missionResults: [],
+                  currentLeader: 0,
+                  selectedTeam: [],
+                  votingPhase: 'teamSelection',
+                  teamVotes: [],
+                  missionVotes: [],
+                  currentSecretVoter: 0,
+                  failedProposals: 0,
+                  gameOver: false,
+                  winner: null,
+                  gameConfig: null,
+                  assassinationTarget: undefined,
+                  assassinationResult: undefined,
+                  realMerlinIndex: undefined
+                });
+              }}
+            >
+              <Text style={styles.backButtonText}>← Nueva Partida</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      );
+    }
+
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.fullScroll}
+          contentContainerStyle={styles.gameScrollContent}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.gameContentWrapper}>
+            <Text style={styles.title}>⚔️ MISIÓN {gameState.currentMission}</Text>
+            <Text style={styles.subtitle}>
+              Líder: {getCurrentLeader()?.name} | Equipo: {getMissionSize()} jugadores
+            </Text>
+          
+          {/* Progreso de misiones */}
+          <View style={styles.missionProgress}>
+            {[1,2,3,4,5].map(mission => (
+              <View key={mission} style={[
+                styles.missionCircle,
+                mission <= gameState.currentMission && styles.currentMissionCircle,
+                gameState.missionResults[mission - 1] === true && styles.successMissionCircle,
+                gameState.missionResults[mission - 1] === false && styles.failMissionCircle
+              ]}>
+                <Text style={styles.missionText}>{mission}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Selección de equipo */}
+          {gameState.votingPhase === 'teamSelection' && (
+            <View style={styles.teamSelectionContainer}>
+              <Text style={styles.phaseTitle}>
+                👤 {getCurrentLeader()?.name}, selecciona tu equipo
+              </Text>
+              <Text style={styles.phaseSubtitle}>
+                Selecciona {getMissionSize()} jugadores para la misión
+              </Text>
+              
+              {/* Aviso para regla especial de misión 4 */}
+              {gameState.currentMission === 4 && gameState.gameConfig?.mission4RequiresTwoFails && (
+                <View style={styles.specialRuleMissionContainer}>
+                  <Text style={styles.specialRuleMissionText}>
+                    ⚡ REGLA ESPECIAL MISIÓN 4: Se necesitan 2 votos de FRACASO para que los malos ganen esta ronda
+                  </Text>
+                </View>
+              )}
+              
+              <View style={styles.playersGrid}>
+                {gameAssignments.map((player, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.playerSelectCard,
+                      gameState.selectedTeam.includes(index) && styles.selectedPlayerCard
+                    ]}
+                    onPress={() => selectPlayer(index)}
+                  >
+                    <Text style={styles.playerSelectName}>{player.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.startVoteButton,
+                  gameState.selectedTeam.length !== getMissionSize() && styles.disabledButton
+                ]}
+                onPress={startTeamVoting}
+              >
+                <Text style={styles.startVoteButtonText}>🗳️ Iniciar Votación de Equipo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Votación de equipo */}
+          {gameState.votingPhase === 'teamVoting' && (
+            <View style={styles.votingContainer}>
+              <Text style={styles.phaseTitle}>🗳️ Votación de Equipo</Text>
+              <Text style={styles.phaseSubtitle}>
+                Equipo propuesto: {gameState.selectedTeam.map(i => gameAssignments[i].name).join(', ')}
+              </Text>
+              <Text style={styles.instructionText}>
+                Toca un jugador para cambiar su voto. Por defecto todos aprueban.
+              </Text>
+              
+              <View style={styles.playersGrid}>
+                {gameAssignments.map((player, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.voterCard,
+                      gameState.teamVotes[index] ? styles.approvedVoterCard : styles.rejectedVoterCard
+                    ]}
+                    onPress={() => toggleTeamVote(index)}
+                  >
+                    <Text style={styles.voterName}>{player.name}</Text>
+                    <Text style={styles.voteStatus}>
+                      {gameState.teamVotes[index] ? '✅ Aprueba' : '❌ Rechaza'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <View style={styles.voteResultContainer}>
+                <Text style={styles.voteCountText}>
+                  Aprueban: {gameState.teamVotes.filter(v => v === true).length} | 
+                  Rechazan: {gameState.teamVotes.filter(v => v === false).length}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.finishVotingButton}
+                  onPress={finishTeamVoting}
+                >
+                  <Text style={styles.finishVotingButtonText}>🗳️ Finalizar Votación</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Votación secreta de misión */}
+          {gameState.votingPhase === 'secretMissionVoting' && (
+            <View style={styles.votingContainer}>
+              <Text style={styles.phaseTitle}>🤫 Votación Secreta</Text>
+              
+              {/* Indicador visual del jugador actual */}
+              <View style={styles.currentPlayerIndicator}>
+                <Text style={styles.currentPlayerTitle}>TURNO DEL JUGADOR:</Text>
+                <Text style={styles.currentPlayerName}>
+                  {gameAssignments[gameState.currentSecretVoter]?.name}
+                </Text>
+                <Text style={styles.playerCounter}>
+                  Jugador {gameState.currentSecretVoter + 1} de {gameState.selectedTeam.length}
+                </Text>
+              </View>
+              
+              <Text style={styles.instructionText}>
+                ⚠️ Solo {gameAssignments[gameState.currentSecretVoter]?.name} debe ver esta pantalla
+              </Text>
+              
+              <View style={styles.secretVotingContainer}>
+                <Text style={styles.secretVotingText}>
+                  ¿Quieres que esta misión sea exitosa o fracase?
+                </Text>
+                
+                <View style={styles.secretVoteButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.secretVoteButton, 
+                      styles.successButton,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButton
+                    ]}
+                    onPress={() => !voteConfirmed && submitSecretMissionVote(true)}
+                    disabled={voteConfirmed}
+                  >
+                    <Text style={[
+                      styles.secretVoteButtonText,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButtonText
+                    ]}>
+                      {lastVotePressed === 'success' && voteConfirmed ? '✅ ÉXITO SELECCIONADO' : '⚔️ ÉXITO'}
+                    </Text>
+                    <Text style={[
+                      styles.secretVoteDescription,
+                      lastVotePressed === 'success' && voteConfirmed && styles.selectedButtonDescription
+                    ]}>
+                      {lastVotePressed === 'success' && voteConfirmed ? 'Voto confirmado' : 'La misión tendrá éxito'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.secretVoteButton, 
+                      styles.failButton,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButton
+                    ]}
+                    onPress={() => !voteConfirmed && submitSecretMissionVote(false)}
+                    disabled={voteConfirmed}
+                  >
+                    <Text style={[
+                      styles.secretVoteButtonText,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButtonText
+                    ]}>
+                      {lastVotePressed === 'fail' && voteConfirmed ? '❌ FRACASO SELECCIONADO' : '🗡️ FRACASO'}
+                    </Text>
+                    <Text style={[
+                      styles.secretVoteDescription,
+                      lastVotePressed === 'fail' && voteConfirmed && styles.selectedButtonDescription
+                    ]}>
+                      {lastVotePressed === 'fail' && voteConfirmed ? 'Voto confirmado' : 'La misión fracasará'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Revelación de votos */}
+          {gameState.votingPhase === 'revealVotes' && (
+            <View style={styles.votingContainer}>
+              <Text style={styles.phaseTitle}>🎭 Revelación de Votos</Text>
+              <Text style={styles.phaseSubtitle}>
+                Resultados de la misión (anónimos)
+              </Text>
+              
+              <View style={styles.voteRevealContainer}>
+                <Text style={styles.voteRevealTitle}>Votos emitidos:</Text>
+                <View style={styles.anonymousVotes}>
+                  {(() => {
+                    // Obtener los votos de los jugadores seleccionados
+                    const teamVotes = gameState.selectedTeam.map(playerIndex => gameState.missionVotes[playerIndex]);
+                    // Aleatorizar el orden de los votos para mantener anonimato
+                    const shuffledVotes = [...teamVotes].sort(() => Math.random() - 0.5);
+                    
+                    return shuffledVotes.map((vote, voteIndex) => (
+                      <View key={voteIndex} style={[
+                        styles.anonymousVote,
+                        vote ? styles.successVote : styles.failVote
+                      ]}>
+                        <Text style={styles.anonymousVoteText}>
+                          {vote ? '⚔️ ÉXITO' : '🗡️ FRACASO'}
+                        </Text>
+                      </View>
+                    ));
+                  })()}
+                </View>
+                
+                {/* Mostrar información especial de misión 4 si aplica */}
+                {gameState.currentMission === 4 && gameState.gameConfig?.mission4RequiresTwoFails && (
+                  <View style={styles.specialRuleContainer}>
+                    <Text style={styles.specialRuleText}>
+                      ⚡ Regla Especial Misión 4: Se necesitan 2 votos de FRACASO para que ganen los malos
+                    </Text>
+                  </View>
+                )}
+                
+                <TouchableOpacity 
+                  style={styles.revealButton}
+                  onPress={revealMissionVotes}
+                >
+                  <Text style={styles.revealButtonText}>🎯 Ver Resultado Final</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Fase de asesinato de Merlín */}
+          {gameState.votingPhase === 'merlinAssassination' && (
+            <View style={styles.votingContainer}>
+              <Text style={styles.phaseTitle}>🗡️ Asesinato de Merlín</Text>
+              <Text style={styles.phaseSubtitle}>
+                ¡Los buenos completaron 3 misiones!
+              </Text>
+              
+              <View style={styles.assassinationContainer}>
+                <Text style={styles.assassinationWarning}>
+                  ⚔️ Los malos tienen una última oportunidad...
+                </Text>
+                <Text style={styles.assassinationText}>
+                  El Asesino puede intentar matar a Merlín. Si lo logra, ¡los malos ganan!
+                </Text>
+                
+                <Text style={styles.targetSelectionTitle}>
+                  🎯 Selecciona el objetivo (solo jugadores BUENOS):
+                </Text>
+                
+                <View style={styles.targetGrid}>
+                  {gameAssignments.map((player, index) => {
+                    // Solo mostrar jugadores del equipo bueno
+                    if (player.roleInfo.team !== 'good') return null;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.targetButton}
+                        onPress={() => attemptMerlinAssassination(index)}
+                      >
+                        <Text style={styles.targetButtonText}>🎯</Text>
+                        <Text style={styles.targetPlayerName}>{players[index]}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                
+                <Text style={styles.assassinationHint}>
+                  💡 Pista: El Asesino debe decidir quién cree que es Merlín
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Espaciado adicional al final para asegurar que todo sea visible */}
+          <View style={{ height: 100 }} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  };
+
+  // Componente del botón de nuevo juego (aparece en todas las pantallas excepto el menú)
+  const NewGameButton = () => (
+    <View style={styles.newGameButtonContainer}>
+      <TouchableOpacity 
+        style={styles.newGameButton} 
+        onPress={resetGame}
+      >
+        <Text style={styles.newGameButtonText}>🔄</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Modal de confirmación para nuevo juego
+  const ResetConfirmModal = () => (
+    showResetConfirm && (
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>🔄 Nuevo Juego</Text>
+          <Text style={styles.modalText}>
+            ¿Estás seguro de que quieres empezar un nuevo juego? Se perderá el progreso actual.
+          </Text>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity style={styles.modalCancelButton} onPress={cancelReset}>
+              <Text style={styles.modalCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalConfirmButton} onPress={confirmReset}>
+              <Text style={styles.modalConfirmText}>Sí, nuevo juego</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    )
+  );
+
+  // Renderizar la pantalla actual
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.mainContainer}>
+        {currentScreen === 'menu' && <MenuScreen />}
+        {currentScreen === 'players' && <PlayersScreen />}
+        {currentScreen === 'roleReveal' && <RoleRevealScreen />}
+        {currentScreen === 'game' && <GameScreen />}
+        
+        {/* Botón de nuevo juego - aparece en todas las pantallas excepto el menú */}
+        {currentScreen !== 'menu' && <NewGameButton />}
+        
+        {/* Modal de confirmación */}
+        <ResetConfirmModal />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0a0f1c',
+    overflow: 'hidden',
+  },
+  fullScroll: {
+    flex: 1,
+    width: '100%',
+    overflow: 'scroll',
+  },
+  centeredContent: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  gameContentWrapper: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#0a0f1c',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#8b9dc3',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  
+  // Estilos del menú principal
+  menuContainer: {
+    width: '100%',
+    maxWidth: 400,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  menuButton: {
+    backgroundColor: '#2d5016',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#4a7c26',
+    alignItems: 'center',
+  },
+  menuButtonText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  menuButtonSubtext: {
+    color: '#a8c776',
+    fontSize: 14,
+  },
+  disabledButton: {
+    backgroundColor: '#3d3d3d',
+    borderColor: '#666666',
+  },
+  disabledText: {
+    color: '#888888',
+  },
+
+  // Estilos de la pantalla de jugadores
+  playersContainer: {
+    width: '100%',
+    maxWidth: 400,
+    marginBottom: 30,
+  },
+  emptyText: {
+    color: '#8b9dc3',
+    fontSize: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  playerCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1e2a4a',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#4a7c26',
+  },
+  nameContainer: {
+    flex: 1,
+  },
+  playerName: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  editHint: {
+    color: '#8b9dc3',
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  
+  // Estilos para edición de nombres
+  editContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nameInput: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    padding: 10,
+    borderRadius: 8,
+    fontSize: 16,
+    marginRight: 10,
+  },
+  editButtons: {
+    flexDirection: 'row',
+  },
+  clearButton: {
+    backgroundColor: '#ff8c00',
+    width: 35,
+    height: 35,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  clearButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  saveButton: {
+    backgroundColor: '#4a7c26',
+    width: 35,
+    height: 35,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: '#cc4444',
+    width: 35,
+    height: 35,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  removeButton: {
+    backgroundColor: '#cc4444',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  addButton: {
+    backgroundColor: '#4a7c26',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  // Estilos de navegación
+  backButton: {
+    backgroundColor: '#5a5a5a',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  backButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+  },
+
+  // Estilos de la pantalla de juego
+  gameContainer: {
+    backgroundColor: '#1e2a4a',
+    padding: 30,
+    borderRadius: 15,
+    marginBottom: 30,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
+  gameText: {
+    color: '#ffffff',
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+
+  // Estilos para asignación de roles
+  roleRevealContainer: {
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  prepContainer: {
+    backgroundColor: '#1e2a4a',
+    padding: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#4a7c26',
+  },
+  playerNameBig: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    marginBottom: 15,
+  },
+  prepText: {
+    fontSize: 18,
+    color: '#ffffff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#ff9999',
+    marginBottom: 25,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  revealButton: {
+    backgroundColor: '#4a7c26',
+    padding: 20,
+    borderRadius: 12,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  revealButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  roleContainer: {
+    backgroundColor: '#2d1810',
+    padding: 25,
+    borderRadius: 15,
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#ffd700',
+    maxWidth: 380,
+  },
+  roleEmoji: {
+    fontSize: 60,
+    marginBottom: 15,
+  },
+  roleName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  roleTeam: {
+    fontSize: 16,
+    color: '#a8c776',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  roleDescription: {
+    fontSize: 14,
+    color: '#ffffff',
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  visionContainer: {
+    backgroundColor: '#0a0f1c',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    width: '100%',
+  },
+  visionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#8b9dc3',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  visionText: {
+    fontSize: 14,
+    color: '#ffffff',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  mysteryText: {
+    fontSize: 12,
+    color: '#ffd700',
+    marginTop: 10,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: 16,
+  },
+  teamContainer: {
+    backgroundColor: '#4d1f1f',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    width: '100%',
+  },
+  teamTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ff9999',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  teamText: {
+    fontSize: 14,
+    color: '#ffffff',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  nextButton: {
+    backgroundColor: '#2d5016',
+    padding: 15,
+    borderRadius: 10,
+    minWidth: 200,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#4a7c26',
+  },
+  nextButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para las pantallas de misiones
+  missionProgress: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  missionCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#3d3d3d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
+    borderWidth: 2,
+    borderColor: '#666',
+  },
+  currentMissionCircle: {
+    backgroundColor: '#ffd700',
+    borderColor: '#ffed4e',
+  },
+  successMissionCircle: {
+    backgroundColor: '#4a7c26',
+    borderColor: '#6ba832',
+  },
+  failMissionCircle: {
+    backgroundColor: '#cc4444',
+    borderColor: '#e55555',
+  },
+  missionText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  // Estilos para selección de equipo
+  teamSelectionContainer: {
+    width: '100%',
+    maxWidth: 600,
+    padding: 20,
+    marginBottom: 20,
+  },
+  phaseTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  phaseSubtitle: {
+    fontSize: 16,
+    color: '#8b9dc3',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  playersGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  playerSelectCard: {
+    backgroundColor: '#1e2a4a',
+    padding: 15,
+    margin: 5,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#4a7c26',
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  selectedPlayerCard: {
+    backgroundColor: '#2d5016',
+    borderColor: '#ffd700',
+  },
+  playerSelectName: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  startVoteButton: {
+    backgroundColor: '#4a7c26',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#6ba832',
+  },
+  startVoteButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  // Estilos para votación
+  votingContainer: {
+    width: '100%',
+    maxWidth: 600,
+    padding: 20,
+    marginBottom: 20,
+  },
+  voterCard: {
+    backgroundColor: '#1e2a4a',
+    padding: 15,
+    margin: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#4a7c26',
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  disabledVoterCard: {
+    backgroundColor: '#2d2d2d',
+    borderColor: '#555',
+  },
+  voterName: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 10,
+  },
+  voteButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  voteButton: {
+    padding: 10,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  approveButton: {
+    backgroundColor: '#4a7c26',
+  },
+  rejectButton: {
+    backgroundColor: '#cc4444',
+  },
+  successButton: {
+    backgroundColor: '#2d5016',
+  },
+  failButton: {
+    backgroundColor: '#8b0000',
+  },
+  voteButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para nueva votación de equipo
+  instructionText: {
+    color: '#8b9dc3',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 15,
+    fontStyle: 'italic',
+  },
+
+  // Estilos para indicador del jugador actual
+  currentPlayerIndicator: {
+    backgroundColor: '#2d1a4a',
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 3,
+    borderColor: '#ff6b35',
+    width: '95%',
+    alignSelf: 'center',
+  },
+  currentPlayerTitle: {
+    color: '#ff6b35',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    letterSpacing: 1,
+  },
+  currentPlayerName: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  playerCounter: {
+    color: '#cccccc',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  approvedVoterCard: {
+    backgroundColor: '#2d5016',
+    borderColor: '#4a7c26',
+  },
+  rejectedVoterCard: {
+    backgroundColor: '#4d1f1f',
+    borderColor: '#cc4444',
+  },
+  voteStatus: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  voteResultContainer: {
+    backgroundColor: '#1e2a4a',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  voteCountText: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  finishVotingButton: {
+    backgroundColor: '#4a7c26',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#6ba832',
+  },
+  finishVotingButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para votación secreta
+  secretVotingContainer: {
+    backgroundColor: '#1e1e1e',
+    padding: 25,
+    borderRadius: 15,
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#ffd700',
+    width: '100%',
+    alignSelf: 'center',
+  },
+  secretVotingText: {
+    color: '#ffffff',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 25,
+    fontWeight: '500',
+  },
+  secretVoteButtons: {
+    flexDirection: 'column',
+    gap: 15,
+    width: '100%',
+    alignItems: 'center',
+  },
+  secretVoteButton: {
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    width: '90%',
+    borderWidth: 2,
+  },
+  secretVoteButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  secretVoteDescription: {
+    color: '#cccccc',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+
+  // Estilos para efectos visuales de botones seleccionados
+  selectedButton: {
+    borderWidth: 4,
+    borderColor: '#ffd700',
+    backgroundColor: '#2a4a2a',
+    transform: [{ scale: 1.05 }],
+  },
+  selectedButtonText: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  selectedButtonDescription: {
+    color: '#ffd700',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  // Estilos para revelación de votos
+  voteRevealContainer: {
+    backgroundColor: '#1e2a4a',
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  voteRevealTitle: {
+    color: '#ffd700',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  anonymousVotes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  anonymousVote: {
+    padding: 15,
+    margin: 5,
+    borderRadius: 10,
+    minWidth: 100,
+    alignItems: 'center',
+    borderWidth: 2,
+  },
+  successVote: {
+    backgroundColor: '#2d5016',
+    borderColor: '#4a7c26',
+  },
+  failVote: {
+    backgroundColor: '#4d1f1f',
+    borderColor: '#cc4444',
+  },
+  anonymousVoteText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  revealButton: {
+    backgroundColor: '#ffd700',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#ffed4e',
+  },
+  revealButtonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para regla especial de misión 4
+  specialRuleContainer: {
+    backgroundColor: '#2a1810',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ff9500',
+    marginVertical: 10,
+  },
+  specialRuleText: {
+    color: '#ff9500',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  // Estilo para aviso en selección de equipo
+  specialRuleMissionContainer: {
+    backgroundColor: '#1e2a1a',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#66cc00',
+    marginVertical: 10,
+    marginHorizontal: 5,
+  },
+  specialRuleMissionText: {
+    color: '#66cc00',
+    fontSize: 13,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  // Estilos para asesinato de Merlín
+  assassinationContainer: {
+    backgroundColor: '#2d1a1a',
+    padding: 20,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#cc4444',
+  },
+  assassinationWarning: {
+    color: '#ff6666',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  assassinationText: {
+    color: '#cccccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  targetSelectionTitle: {
+    color: '#ffd700',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  targetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  targetButton: {
+    backgroundColor: '#1e2a4a',
+    padding: 15,
+    margin: 8,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#4a7c26',
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  targetButtonText: {
+    fontSize: 24,
+    marginBottom: 5,
+  },
+  targetPlayerName: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  assassinationHint: {
+    color: '#888888',
+    fontSize: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
+  // Estilos para resultados del asesinato
+  assassinationResultContainer: {
+    backgroundColor: '#2d1a1a',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#cc4444',
+    marginTop: 15,
+  },
+  assassinationResultTitle: {
+    color: '#ff6666',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  assassinationResultText: {
+    color: '#cccccc',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  assassinationSuccess: {
+    color: '#ff4444',
+    fontWeight: 'bold',
+  },
+  assassinationFailed: {
+    color: '#44ff44',
+    fontWeight: 'bold',
+  },
+  realMerlinReveal: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
+    backgroundColor: '#2a2a1e',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffd700',
+  },
+
+  // Estilos para revelación final de roles
+  roleRevealFinal: {
+    backgroundColor: '#1a1a2e',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    marginTop: 15,
+  },
+  finalRoleTitle: {
+    color: '#ffd700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  finalRoleText: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 3,
+  },
+  goodTeamText: {
+    color: '#44ff44',
+  },
+  evilTeamText: {
+    color: '#ff4444',
+  },
+
+  // Estilos para scroll
+  scrollContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+    paddingBottom: 120,
+    paddingHorizontal: 10,
+  },
+  menuScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+    minHeight: '100%',
+  },
+  playersScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+    minHeight: '100%',
+  },
+  roleScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+    minHeight: '100%',
+  },
+  gameOverScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+    minHeight: '100%',
+  },
+  gameScrollContent: {
+    paddingBottom: 150,
+    minHeight: '100%',
+  },
+
+  // Estilos para el contenedor principal y botón de nuevo juego
+  mainContainer: {
+    flex: 1,
+  },
+  newGameButtonContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  newGameButton: {
+    backgroundColor: '#cc4444',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ff6666',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  newGameButtonText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+
+  // Estilos para el modal de confirmación
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+  },
+  modalContainer: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 15,
+    padding: 25,
+    margin: 20,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    minWidth: 280,
+  },
+  modalTitle: {
+    color: '#ffd700',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  modalText: {
+    color: '#cccccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: '#555555',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#777777',
+  },
+  modalCancelText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalConfirmButton: {
+    flex: 1,
+    backgroundColor: '#cc4444',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ff6666',
+  },
+  modalConfirmText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
