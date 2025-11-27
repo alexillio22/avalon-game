@@ -171,10 +171,13 @@ export default function App() {
                     />
                     <View style={styles.editButtons}>
                       <TouchableOpacity 
-                        onPress={() => setEditingName('')}
+                        onPress={() => {
+                          console.log('🗑️ Borrando texto del input');
+                          setEditingName('');
+                        }}
                         style={styles.clearButton}
                       >
-                        <Text style={styles.clearButtonText}>🗑️</Text>
+                        <Text style={styles.clearButtonText}>❌</Text>
                       </TouchableOpacity>
                       <TouchableOpacity 
                         onPress={savePlayerName}
