@@ -654,7 +654,6 @@ export default function App() {
                 ))}
               </View>
             </View>
-            </View>
 
             <TouchableOpacity 
               style={styles.backButton}
