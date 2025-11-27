@@ -69,14 +69,16 @@ export default function App() {
 
   // Pantalla del menú principal
   const MenuScreen = () => (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContentContainer}
+        style={styles.fullScroll}
+        contentContainerStyle={styles.menuScrollContent}
         showsVerticalScrollIndicator={true}
       >
-        <Text style={styles.title}>🏰 AVALON</Text>
-        <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
+        <View style={styles.centeredContent}>
+          <Text style={styles.title}>🏰 AVALON</Text>
+          <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
+        </View>
         
         <View style={styles.menuContainer}>
         <TouchableOpacity 
@@ -103,7 +105,7 @@ export default function App() {
           </Text>
         </TouchableOpacity>
       </View>
-      </ScrollView>
+        </ScrollView>
     </SafeAreaView>
   );
 
@@ -129,12 +131,14 @@ export default function App() {
 
   // Pantalla de gestión de jugadores
   const PlayersScreen = () => (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>👥 Jugadores</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.centeredContent}>
+        <Text style={styles.title}>👥 Jugadores</Text>
+      </View>
       
       <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContentContainer}
+        style={styles.fullScroll}
+        contentContainerStyle={styles.playersScrollContent}
         showsVerticalScrollIndicator={true}
       >
         <View style={styles.playersContainer}>
@@ -270,15 +274,17 @@ export default function App() {
     };
     
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>🎭 ASIGNACIÓN DE ROLES</Text>
-        <Text style={styles.subtitle}>
-          Jugador {currentPlayerIndex + 1} de {gameAssignments.length}
-        </Text>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centeredContent}>
+          <Text style={styles.title}>🎭 ASIGNACIÓN DE ROLES</Text>
+          <Text style={styles.subtitle}>
+            Jugador {currentPlayerIndex + 1} de {gameAssignments.length}
+          </Text>
+        </View>
         
         <ScrollView 
-          style={styles.scrollContainer}
-          contentContainerStyle={styles.scrollContentContainer}
+          style={styles.fullScroll}
+          contentContainerStyle={styles.roleScrollContent}
           showsVerticalScrollIndicator={true}
         >
           <View style={styles.roleRevealContainer}>
@@ -587,16 +593,18 @@ export default function App() {
   const GameScreen = () => {
     if (gameState.gameOver) {
       return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
           <ScrollView 
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContentContainer}
+            style={styles.fullScroll}
+            contentContainerStyle={styles.gameOverScrollContent}
             showsVerticalScrollIndicator={true}
           >
-            <Text style={styles.title}>
-              {gameState.winner === 'good' ? '👑 ¡LOS BUENOS GANAN!' : '⚡ ¡LOS MALOS GANAN!'}
-            </Text>
-            <Text style={styles.subtitle}>Fin del juego</Text>
+            <View style={styles.centeredContent}>
+              <Text style={styles.title}>
+                {gameState.winner === 'good' ? '👑 ¡LOS BUENOS GANAN!' : '⚡ ¡LOS MALOS GANAN!'}
+              </Text>
+              <Text style={styles.subtitle}>Fin del juego</Text>
+            </View>
             
             <View style={styles.gameContainer}>
               <Text style={styles.gameText}>Resultados de las misiones:</Text>
@@ -646,6 +654,7 @@ export default function App() {
                 ))}
               </View>
             </View>
+            </View>
 
             <TouchableOpacity 
               style={styles.backButton}
@@ -681,11 +690,11 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
-          style={styles.gameScrollView}
-          contentContainerStyle={styles.scrollContentContainer}
+          style={styles.fullScroll}
+          contentContainerStyle={styles.gameScrollContent}
           showsVerticalScrollIndicator={true}
         >
-          <View style={styles.container}>
+          <View style={styles.gameContentWrapper}>
             <Text style={styles.title}>⚔️ MISIÓN {gameState.currentMission}</Text>
             <Text style={styles.subtitle}>
               Líder: {getCurrentLeader()?.name} | Equipo: {getMissionSize()} jugadores
@@ -1031,6 +1040,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0a0f1c',
   },
+  fullScroll: {
+    flex: 1,
+    width: '100%',
+  },
+  centeredContent: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  gameContentWrapper: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#0a0f1c',
@@ -1367,11 +1389,6 @@ const styles = StyleSheet.create({
   },
 
   // Estilos para las pantallas de misiones
-  gameScrollView: {
-    flex: 1,
-    backgroundColor: '#0a0f1c',
-    width: '100%',
-  },
   missionProgress: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1889,8 +1906,27 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     flexGrow: 1,
-    paddingBottom: 120, // Más espacio para asegurar que todos los botones sean visibles
+    paddingBottom: 120,
     paddingHorizontal: 10,
+  },
+  menuScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+  },
+  playersScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+  },
+  roleScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+  },
+  gameOverScrollContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+  },
+  gameScrollContent: {
+    paddingBottom: 150,
   },
 
   // Estilos para el contenedor principal y botón de nuevo juego
