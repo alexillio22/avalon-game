@@ -95,6 +95,16 @@ try {
     console.log('✅ favicon.ico creado');
   }
   
+  // Copiar icon-192.png si Expo no lo generó
+  const icon192Path = path.join(__dirname, 'dist', 'icon-192.png');
+  if (!fs.existsSync(icon192Path)) {
+    const sourceIcon = path.join(__dirname, 'assets', 'icon.png');
+    if (fs.existsSync(sourceIcon)) {
+      fs.copyFileSync(sourceIcon, icon192Path);
+      console.log('✅ icon-192.png copiado');
+    }
+  }
+  
   // 3. Verificar que index.html existe
   if (!fs.existsSync(distIndexPath)) {
     throw new Error('index.html no fue generado por expo export');
