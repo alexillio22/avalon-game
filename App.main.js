@@ -580,17 +580,13 @@ export default function App() {
             ) : (
               // Pantalla de rol revelado
               <View style={styles.roleContainer}>
-                <View style={styles.roleHeader}>
-                  <Image 
-                    source={getRoleImage(currentPlayer)}
-                    style={styles.roleImage}
-                    resizeMode="contain"
-                  />
-                  <View style={styles.roleTextContainer}>
-                    <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
-                    <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
-                  </View>
-                </View>
+                <Image 
+                  source={getRoleImage(currentPlayer)}
+                  style={styles.roleImageCircle}
+                  resizeMode="cover"
+                />
+                <Text style={styles.roleEmoji}>{currentPlayer.roleInfo.emoji}</Text>
+                <Text style={styles.roleName}>{currentPlayer.roleInfo.name}</Text>
                 <Text style={styles.roleTeam}>
                   Equipo: {currentPlayer.roleInfo.team === 'good' ? '👑 Buenos' : '⚡ Malos'}
                 </Text>
@@ -1602,32 +1598,23 @@ const styles = StyleSheet.create({
     borderColor: '#ffd700',
     maxWidth: 380,
   },
-  roleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  roleImageCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     marginBottom: 15,
-    width: '100%',
-  },
-  roleImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#ffd700',
   },
-  roleTextContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
   roleEmoji: {
-    fontSize: 40,
-    marginBottom: 5,
+    fontSize: 50,
+    marginBottom: 10,
   },
   roleName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#ffd700',
+    marginBottom: 8,
     textAlign: 'center',
   },
   roleTeam: {
