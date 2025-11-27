@@ -74,6 +74,12 @@ try {
     '<meta name="apple-mobile-web-app-capable" content="yes" />\n    <meta name="mobile-web-app-capable" content="yes" />'
   );
   
+  // ELIMINAR estilos CSS que causan selección automática de texto
+  indexContent = indexContent.replace(
+    /\/\* Selección automática de texto en inputs \*\/\s*input\[type="text"\]:focus\s*\{[^}]*\}/g,
+    '/* Selección automática deshabilitada - usar botón clear */'
+  );
+  
   // Reemplazar TODAS las referencias a .js con ?v=timestamp
   indexContent = indexContent.replace(
     /\.js"/g,
