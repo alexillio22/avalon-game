@@ -1,4 +1,4 @@
-const CACHE_NAME = 'avalon-pwa-v2.0';
+const CACHE_NAME = 'avalon-pwa-v2.1';
 const PRECACHE_URLS = [
   './',                                                               // Página principal
   './index.html',                                                     // HTML principal
@@ -121,7 +121,7 @@ self.addEventListener('message', event => {
 });
 
 // LOG INICIAL
-console.log('🏰 Avalon Service Worker v2.0 iniciado');
+console.log('🏰 Avalon Service Worker v2.1 iniciado');
 console.log('📋 Estrategia: Network First con precaching');
 console.log('📦 Cache name:', CACHE_NAME);
 console.log('📁 Archivos precacheados:', PRECACHE_URLS);
