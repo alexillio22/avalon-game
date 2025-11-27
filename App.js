@@ -157,6 +157,7 @@ export default function App() {
                       placeholder="Nombre del jugador"
                       placeholderTextColor="#888"
                       autoFocus
+                      selectTextOnFocus={true}
                       maxLength={20}
                     />
                     <View style={styles.editButtons}>
