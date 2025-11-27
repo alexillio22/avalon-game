@@ -42,7 +42,7 @@ export const ROLES = {
   
   // MALOS
   ASESINO: {
-    name: 'Asesino de Mordred',
+    name: 'Asesino',
     emoji: '🗡️',
     team: 'evil',
     description: 'Conoce a los otros malvados. Puede asesinar a Merlín',
