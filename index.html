@@ -22,11 +22,24 @@
     <link rel="apple-touch-icon" href="./asesino.png" />
     
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
             margin: 0;
             padding: 0;
             background-color: #0a0f1c;
-            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        #root {
+            height: 100%;
+            width: 100%;
+            overflow: auto;
         }
         
         #splash {
