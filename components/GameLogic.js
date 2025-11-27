@@ -84,8 +84,8 @@ export const ROLES = {
     name: 'Oberon',
     emoji: '🕴️',
     team: 'evil',
-    description: 'Espía solitario - invisible para todos. Ve solo a Asesino y Morgana',
-    canSee: ['ASESINO', 'MORGANA'], // Ve solo a los dos roles principales malos
+    description: 'Espía solitario - invisible para todos. Solo conoce a Mordred',
+    canSee: ['MORDRED'], // Ve solo a Mordred, el otro rey de las sombras
     specialAbility: 'Invisible para todos los demás roles',
     winCondition: 'Los malos sabotean 3 misiones O asesinan a Merlín'
   }
