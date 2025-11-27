@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
 
+// BUILD: 2025-11-27-20:30 - Forzar recompilación con clearButton
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('menu');
   const [players, setPlayers] = useState([]);
