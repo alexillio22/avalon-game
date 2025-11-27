@@ -133,104 +133,190 @@ export default function App() {
         showsVerticalScrollIndicator={true}
       >
         <View style={styles.rulesContainer}>
-          <Text style={styles.rulesTitle}>📖 Reglas de Avalon</Text>
+          <Text style={styles.rulesTitle}>📖 Cómo Jugar a Avalon</Text>
           
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>🤔 ¿DE QUÉ VA EL JUEGO?</Text>
+            <Text style={styles.ruleText}>
+              Imagina que estás en una película de espías: Hay <Text style={styles.bold}>agentes buenos</Text> y <Text style={styles.bold}>espías infiltrados</Text>.
+            </Text>
+            <Text style={styles.ruleText}>
+              • Los <Text style={styles.evilTeam}>espías se conocen entre ellos</Text> y trabajan juntos en secreto{'\n'}
+              • Los <Text style={styles.goodTeam}>agentes buenos NO saben quién es quién</Text> y deben descubrirlo{'\n'}
+              • Todos fingen ser buenos y <Text style={styles.bold}>nadie puede revelar su rol</Text>
+            </Text>
+            <Text style={styles.ruleText}>
+              Tu misión: <Text style={styles.bold}>Convence a los demás, miente si eres malo, deduce quién miente si eres bueno.</Text>
+            </Text>
+          </View>
+
           <View style={styles.ruleSection}>
             <Text style={styles.ruleSectionTitle}>🎯 OBJETIVO DEL JUEGO</Text>
             <Text style={styles.ruleText}>
-              Avalon es un juego de dedución social donde dos equipos compiten en secreto:
+              Se juegan 5 misiones. Gana el primer equipo que consiga 3 victorias:
             </Text>
             <Text style={styles.ruleText}>
-              • <Text style={styles.goodTeam}>👑 BUENOS</Text>: Deben completar 3 de 5 misiones con éxito
-            </Text>
-            <Text style={styles.ruleText}>
-              • <Text style={styles.evilTeam}>⚡ MALOS</Text>: Deben sabotear 3 misiones O asesinar a Merlín
+              • <Text style={styles.goodTeam}>BUENOS</Text>: Completar 3 misiones con éxito{'\n'}
+              • <Text style={styles.evilTeam}>MALOS</Text>: Sabotear 3 misiones (o matar a Merlín al final)
             </Text>
           </View>
 
           <View style={styles.ruleSection}>
-            <Text style={styles.ruleSectionTitle}>👥 ROLES PRINCIPALES</Text>
+            <Text style={styles.ruleSectionTitle}>🎮 PASO A PASO: CÓMO FUNCIONA UNA RONDA</Text>
             
-            <Text style={styles.roleHeader}>EQUIPO BUENO:</Text>
+            <Text style={styles.ruleStepTitle}>PASO 1: El Líder Propone un Equipo</Text>
             <Text style={styles.ruleText}>
-              🧙‍♂️ <Text style={styles.bold}>Merlín</Text>: Ve a los malos (excepto Mordred). Debe mantenerse oculto o será asesinado.
+              Un jugador es el líder de turno. Debe elegir un grupo de jugadores para ir a la misión.
             </Text>
             <Text style={styles.ruleText}>
-              🛡️ <Text style={styles.bold}>Percival</Text>: Ve a Merlín y Morgana juntos, pero no sabe cuál es cuál.
-            </Text>
-            <Text style={styles.ruleText}>
-              ⚔️ <Text style={styles.bold}>Leales Siervos</Text>: No tienen información especial, solo su lealtad.
+              Ejemplo: "Yo propongo que vayan Juan, María y Pedro a esta misión"
             </Text>
 
-            <Text style={styles.roleHeader}>EQUIPO MALO:</Text>
+            <Text style={styles.ruleStepTitle}>PASO 2: Todos Votan el Equipo Propuesto</Text>
             <Text style={styles.ruleText}>
-              🗡️ <Text style={styles.bold}>Asesino</Text>: Conoce a otros malos. Puede asesinar a Merlín si los buenos ganan.
+              TODOS los jugadores (no solo el equipo) votan si aprueban o rechazan esa propuesta.
             </Text>
             <Text style={styles.ruleText}>
-              🔮 <Text style={styles.bold}>Morgana</Text>: Se hace pasar por Merlín ante Percival.
+              • Si la <Text style={styles.bold}>MAYORÍA APRUEBA</Text>: El equipo va a la misión (sigue al paso 3){'\n'}
+              • Si la <Text style={styles.bold}>MAYORÍA RECHAZA</Text>: No pasa nada. El siguiente jugador es líder y propone otro equipo
             </Text>
             <Text style={styles.ruleText}>
-              👑 <Text style={styles.bold}>Mordred</Text>: Invisible para Merlín. Líder de las sombras.
+              ⚠️ <Text style={styles.bold}>Importante:</Text> Si se rechazan 5 equipos seguidos, ¡los malos ganan automáticamente!
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>PASO 3: El Equipo Va a la Misión</Text>
+            <Text style={styles.ruleText}>
+              Solo los jugadores del equipo aprobado votan en secreto:
             </Text>
             <Text style={styles.ruleText}>
-              🕴️ <Text style={styles.bold}>Oberon</Text>: Solo conoce a Mordred. Nadie lo ve a él.
+              • Los <Text style={styles.goodTeam}>BUENOS siempre deben votar ÉXITO</Text> ✅{'\n'}
+              • Los <Text style={styles.evilTeam}>MALOS pueden votar ÉXITO o FRACASO</Text> (eligen sabotear o no)
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>PASO 4: Se Revela el Resultado</Text>
+            <Text style={styles.ruleText}>
+              • Si <Text style={styles.bold}>todos votaron ÉXITO</Text>: ✅ La misión se completa (punto para buenos){'\n'}
+              • Si hay <Text style={styles.bold}>aunque sea 1 voto de FRACASO</Text>: ❌ La misión falla (punto para malos)
             </Text>
             <Text style={styles.ruleText}>
-              🌑 <Text style={styles.bold}>Esbirros</Text>: Malos sin poderes. Los roles principales los ven pero ellos no ven a nadie.
+              Ahora todos discuten quién puede ser el traidor basándose en los votos y comportamientos.
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>PASO 5: Siguiente Ronda</Text>
+            <Text style={styles.ruleText}>
+              El liderazgo pasa al siguiente jugador y se repite todo el proceso. El juego continúa hasta que un equipo gane 3 misiones.
             </Text>
           </View>
 
           <View style={styles.ruleSection}>
-            <Text style={styles.ruleSectionTitle}>🎮 CÓMO SE JUEGA</Text>
+            <Text style={styles.ruleSectionTitle}>✨ ROLES ESPECIALES (IMPORTANTE)</Text>
             
-            <Text style={styles.ruleStepTitle}>1️⃣ INICIO DEL JUEGO</Text>
             <Text style={styles.ruleText}>
-              • Cada jugador recibe su rol secreto{'\n'}
-              • Los jugadores ven la información que su rol les permite conocer{'\n'}
-              • NADIE debe revelar su rol verbalmente durante el juego
+              Al inicio, cada jugador recibe un <Text style={styles.bold}>rol secreto</Text> con información especial:
             </Text>
 
-            <Text style={styles.ruleStepTitle}>2️⃣ PROPUESTA DE EQUIPO</Text>
+            <Text style={styles.roleHeader}>🧙‍♂️ MERLÍN (el más importante):</Text>
             <Text style={styles.ruleText}>
-              • El líder de turno propone un equipo para la misión{'\n'}
-              • El número de personas varía según la misión (2-5 jugadores){'\n'}
-              • TODOS votan aprobar o rechazar el equipo propuesto
+              • Es bueno y <Text style={styles.bold}>ve quiénes son los malos</Text>{'\n'}
+              • Debe guiar a los buenos SUTILMENTE sin revelar su identidad{'\n'}
+              • ⚠️ Si los buenos ganan, el Asesino puede intentar matarlo. ¡Si lo adivina, los malos ganan!
             </Text>
 
-            <Text style={styles.ruleStepTitle}>3️⃣ VOTACIÓN DE EQUIPO</Text>
+            <Text style={styles.roleHeader}>🛡️ PERCIVAL:</Text>
             <Text style={styles.ruleText}>
-              • Si la mayoría APRUEBA: el equipo va a misión{'\n'}
-              • Si la mayoría RECHAZA: el siguiente jugador es líder{'\n'}
-              • Si se rechazan 5 equipos seguidos: los malos ganan automáticamente
+              • Ve a Merlín y Morgana juntos, pero no sabe cuál es cuál{'\n'}
+              • Debe deducir quién es el verdadero Merlín observando el juego
             </Text>
 
-            <Text style={styles.ruleStepTitle}>4️⃣ MISIÓN</Text>
+            <Text style={styles.roleHeader}>⚔️ LEALES SIERVOS:</Text>
             <Text style={styles.ruleText}>
-              • Solo los jugadores del equipo aprobado votan en secreto{'\n'}
-              • Buenos DEBEN votar ÉXITO{'\n'}
-              • Malos pueden votar ÉXITO o FRACASO{'\n'}
-              • Con 1 voto de FRACASO, la misión falla (excepto misión 4 con 7+ jugadores que necesita 2 fracasos)
+              • Buenos sin información especial{'\n'}
+              • Deben confiar en su intuición y observación
             </Text>
 
-            <Text style={styles.ruleStepTitle}>5️⃣ FIN DEL JUEGO</Text>
+            <Text style={styles.roleHeader}>🗡️ ASESINO (líder malo):</Text>
             <Text style={styles.ruleText}>
-              <Text style={styles.bold}>Los Buenos ganan si:</Text>{'\n'}
-              • Completan 3 misiones con éxito Y el Asesino no identifica a Merlín{'\n\n'}
-              <Text style={styles.bold}>Los Malos ganan si:</Text>{'\n'}
-              • Sabotean 3 misiones{'\n'}
-              • O asesinan a Merlín después de que los buenos completen 3 misiones{'\n'}
-              • O se rechazan 5 equipos consecutivos
+              • Conoce a los otros malos{'\n'}
+              • Si los buenos completan 3 misiones, puede intentar asesinar a Merlín para ganar
+            </Text>
+
+            <Text style={styles.roleHeader}>🔮 MORGANA:</Text>
+            <Text style={styles.ruleText}>
+              • Mala que se hace pasar por Merlín ante Percival{'\n'}
+              • Confunde a los buenos haciéndose pasar por la vidente
+            </Text>
+
+            <Text style={styles.roleHeader}>👑 MORDRED:</Text>
+            <Text style={styles.ruleText}>
+              • Malo invisible para Merlín (su gran ventaja){'\n'}
+              • Puede actuar sospechosamente sin que Merlín lo delate
+            </Text>
+
+            <Text style={styles.roleHeader}>🕴️ OBERON:</Text>
+            <Text style={styles.ruleText}>
+              • Solo conoce a Mordred{'\n'}
+              • Nadie lo ve (ni buenos ni malos). Trabaja completamente solo
+            </Text>
+
+            <Text style={styles.roleHeader}>🌑 ESBIRROS:</Text>
+            <Text style={styles.ruleText}>
+              • Malos que no ven a nadie{'\n'}
+              • Los roles principales malos sí los ven a ellos
             </Text>
           </View>
 
           <View style={styles.ruleSection}>
-            <Text style={styles.ruleSectionTitle}>💡 CONSEJOS ESTRATÉGICOS</Text>
+            <Text style={styles.ruleSectionTitle}>💡 ESTRATEGIAS BÁSICAS</Text>
+            
+            <Text style={styles.roleHeader}>Si eres BUENO:</Text>
             <Text style={styles.ruleText}>
-              • <Text style={styles.bold}>Buenos</Text>: Observa quién propone qué equipos y cómo votan{'\n'}
-              • <Text style={styles.bold}>Merlín</Text>: Guía sutilmente sin revelar tu identidad{'\n'}
-              • <Text style={styles.bold}>Malos</Text>: No sabotéen todas las misiones - levanta sospechas{'\n'}
-              • <Text style={styles.bold}>Percival</Text>: Deduce quién es el verdadero Merlín observando el juego{'\n'}
-              • La comunicación y deducción son clave - ¡habla y convence!
+              • Observa quién propone qué equipos y cómo votan{'\n'}
+              • Analiza en qué misiones aparecen fracasos{'\n'}
+              • Discute con los demás y busca contradicciones{'\n'}
+              • Confía en Merlín si lo identificas (pero no digas que es Merlín)
+            </Text>
+
+            <Text style={styles.roleHeader}>Si eres MALO:</Text>
+            <Text style={styles.ruleText}>
+              • No sabotees TODAS las misiones (levanta sospechas){'\n'}
+              • Finge ser bueno: vota equipos lógicos, acusa a otros{'\n'}
+              • Culpa a otros cuando aparezcan fracasos{'\n'}
+              • Coordínate sutilmente con tus compañeros malos
+            </Text>
+
+            <Text style={styles.roleHeader}>Si eres MERLÍN:</Text>
+            <Text style={styles.ruleText}>
+              • Guía sin ser obvio (no señales directamente a los malos){'\n'}
+              • Propón equipos buenos pero mezclados{'\n'}
+              • Usa a Percival como escudo (que él parezca Merlín){'\n'}
+              • Al final del juego, intenta confundir al Asesino sobre tu identidad
+            </Text>
+          </View>
+
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>🏆 ¿CÓMO SE GANA?</Text>
+            
+            <Text style={styles.ruleText}>
+              <Text style={styles.goodTeam}>LOS BUENOS GANAN SI:</Text>{'\n'}
+              ✅ Completan 3 de 5 misiones con éxito{'\n'}
+              ✅ Y el Asesino no logra identificar a Merlín después
+            </Text>
+
+            <Text style={styles.ruleText}>
+              <Text style={styles.evilTeam}>LOS MALOS GANAN SI:</Text>{'\n'}
+              ❌ Sabotean 3 de 5 misiones{'\n'}
+              ❌ O el Asesino mata a Merlín después de que los buenos completen 3 misiones{'\n'}
+              ❌ O se rechazan 5 propuestas de equipo seguidas
+            </Text>
+          </View>
+
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>⭐ REGLA DE ORO</Text>
+            <Text style={styles.ruleText}>
+              <Text style={styles.bold}>¡LA COMUNICACIÓN ES TODO!</Text>
+            </Text>
+            <Text style={styles.ruleText}>
+              Habla, convence, miente, acusa, defiéndete. El juego se juega hablando con los demás jugadores. No tengas miedo de participar activamente en las discusiones. Ese es el alma del juego.
             </Text>
           </View>
 
