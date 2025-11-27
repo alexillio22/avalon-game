@@ -68,6 +68,12 @@ try {
     'href="./icon-192.png"'
   );
   
+  // Agregar meta tag mobile-web-app-capable
+  indexContent = indexContent.replace(
+    /<meta name="apple-mobile-web-app-capable" content="yes" \/>/,
+    '<meta name="apple-mobile-web-app-capable" content="yes" />\n    <meta name="mobile-web-app-capable" content="yes" />'
+  );
+  
   // Reemplazar TODAS las referencias a .js con ?v=timestamp
   indexContent = indexContent.replace(
     /\.js"/g,
@@ -79,6 +85,15 @@ try {
   
   fs.writeFileSync(distIndexPath, indexContent);
   console.log(`✅ Rutas cambiadas a static/ y cache buster añadido: ?v=${timestamp}`);
+  
+  // Crear favicon.ico simple (1x1 transparente)
+  const faviconPath = path.join(__dirname, 'dist', 'favicon.ico');
+  if (!fs.existsSync(faviconPath)) {
+    // ICO de 1x1 pixel transparente
+    const icoBuffer = Buffer.from([0,0,1,0,1,0,1,1,0,0,1,0,24,0,48,0,0,0,22,0,0,0,40,0,0,0,1,0,0,0,2,0,0,0,1,0,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,0,0,0,0]);
+    fs.writeFileSync(faviconPath, icoBuffer);
+    console.log('✅ favicon.ico creado');
+  }
   
   // 3. Verificar que index.html existe
   if (!fs.existsSync(distIndexPath)) {
