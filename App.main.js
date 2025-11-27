@@ -161,16 +161,6 @@ export default function App() {
                       style={styles.nameInput}
                       value={editingName}
                       onChangeText={setEditingName}
-                      onFocus={(e) => {
-                        // Seleccionar todo el texto al hacer focus
-                        setTimeout(() => {
-                          if (e.target && e.target.select) {
-                            e.target.select();
-                          } else if (e.target && e.target.setSelectionRange) {
-                            e.target.setSelectionRange(0, e.target.value.length);
-                          }
-                        }, 10);
-                      }}
                       placeholder="Nombre del jugador"
                       placeholderTextColor="#888"
                       autoFocus={true}
