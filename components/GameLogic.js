@@ -76,7 +76,7 @@ export const ROLES = {
     emoji: '🌑',
     team: 'evil',
     description: 'Siervo malvado sin poderes especiales',
-    canSee: ['ASESINO', 'MORGANA', 'MORDRED'], // Ve a los otros malos excepto Oberon
+    canSee: [], // NO ve a nadie - es un malo "ciego"
     winCondition: 'Los malos sabotean 3 misiones O asesinan a Merlín'
   },
   
@@ -180,15 +180,20 @@ export function getPlayerVision(playerAssignment, allAssignments) {
   const role = playerAssignment.roleInfo;
   const canSeeRoles = role.canSee || [];
   
+  console.log(`🔍 ${playerAssignment.name} (${playerAssignment.role}) puede ver roles:`, canSeeRoles);
+  
   if (canSeeRoles.length === 0) {
     return [];
   }
   
   // Encontrar jugadores que este rol puede ver
-  const visiblePlayers = allAssignments.filter(assignment => 
-    canSeeRoles.includes(assignment.role) && 
-    assignment.name !== playerAssignment.name
-  );
+  const visiblePlayers = allAssignments.filter(assignment => {
+    const isVisible = canSeeRoles.includes(assignment.role) && assignment.name !== playerAssignment.name;
+    console.log(`  - ${assignment.name} (${assignment.role}): ${isVisible ? '✅ VISIBLE' : '❌ NO VISIBLE'}`);
+    return isVisible;
+  });
+  
+  console.log(`👁️ ${playerAssignment.name} verá a:`, visiblePlayers.map(p => `${p.name} (${p.role})`));
   
   // Caso especial para Percival: ve a Merlín y Morgana pero sin identificar
   if (playerAssignment.role === 'PERCIVAL') {
