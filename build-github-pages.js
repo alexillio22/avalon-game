@@ -12,20 +12,9 @@ try {
   console.log('📦 Ejecutando expo export con --clear y --reset-cache...');
   execSync('npx expo export -p web --output-dir dist --clear --no-minify', { stdio: 'inherit' });
   
-  // 2. SOBRESCRIBIR con nuestro index.html personalizado
-  console.log('📝 Copiando index.html personalizado...');
-  const customIndexPath = path.join(__dirname, 'index.html');
-  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
-  
-  if (fs.existsSync(customIndexPath)) {
-    fs.copyFileSync(customIndexPath, distIndexPath);
-    console.log('✅ index.html personalizado copiado');
-  } else {
-    console.log('⚠️ No se encontró index.html personalizado, usando el generado por Expo');
-  }
-  
-  // 2.5 Añadir query string al JS para forzar recarga
+  // 2. Añadir query string al JS PRIMERO (antes de copiar index.html)
   console.log('🔄 Añadiendo cache buster al JavaScript...');
+  const distIndexPath = path.join(__dirname, 'dist', 'index.html');
   let indexContent = fs.readFileSync(distIndexPath, 'utf8');
   const timestamp = Date.now();
   indexContent = indexContent.replace(
@@ -35,7 +24,16 @@ try {
   fs.writeFileSync(distIndexPath, indexContent);
   console.log(`✅ Cache buster añadido: ?v=${timestamp}`);
   
-  // 3. Verificar que index.html existe en dist
+  // 3. DESPUÉS sobrescribir con nuestro index.html personalizado SI existe
+  console.log('📝 Verificando index.html personalizado...');
+  const customIndexPath = path.join(__dirname, 'index.html');
+  
+  if (fs.existsSync(customIndexPath)) {
+    console.log('⚠️ index.html personalizado encontrado, pero ya aplicamos cache buster');
+    // NO lo copiamos para no perder el cache buster
+  }
+  
+  // 4. Verificar que index.html existe en dist
   if (!fs.existsSync(distIndexPath)) {
     throw new Error('index.html no fue generado por expo export');
   }
