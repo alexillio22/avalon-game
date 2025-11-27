@@ -44,6 +44,23 @@ try {
   const timestamp = Date.now();
   const originalLength = indexContent.length;
   
+  // Leer versión del package.json
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const version = packageJson.version;
+  
+  // Generar fecha y hora del build
+  const buildDate = new Date().toLocaleString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Madrid'
+  });
+  
+  console.log(`📦 Versión: ${version}`);
+  console.log(`📅 Build date: ${buildDate}`);
+  
   // Cambiar rutas de _expo/static/ a static/
   indexContent = indexContent.replace(
     /_expo\/static\//g,
@@ -91,6 +108,24 @@ try {
   
   fs.writeFileSync(distIndexPath, indexContent);
   console.log(`✅ Rutas cambiadas a static/ y cache buster añadido: ?v=${timestamp}`);
+  
+  // Reemplazar placeholders de versión y fecha en archivos JS
+  console.log('🔄 Actualizando versión y fecha del build en archivos JS...');
+  const staticJsPath = path.join(__dirname, 'dist', 'static', 'js', 'web');
+  if (fs.existsSync(staticJsPath)) {
+    const jsFiles = fs.readdirSync(staticJsPath).filter(f => f.endsWith('.js'));
+    jsFiles.forEach(file => {
+      const filePath = path.join(staticJsPath, file);
+      let content = fs.readFileSync(filePath, 'utf8');
+      
+      // Reemplazar placeholders
+      content = content.replace(/__BUILD_VERSION__/g, version);
+      content = content.replace(/__BUILD_DATE__/g, buildDate);
+      
+      fs.writeFileSync(filePath, content);
+    });
+    console.log(`✅ Versión y fecha actualizados en ${jsFiles.length} archivos JS`);
+  }
   
   // Crear favicon.ico simple (1x1 transparente)
   const faviconPath = path.join(__dirname, 'dist', 'favicon.ico');

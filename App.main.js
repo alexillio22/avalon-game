@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, TextInput, Alert, ScrollView, Image } from 'react-native';
 import { assignRoles, getPlayerVision, getEvilTeamInfo, ROLES, GAME_CONFIG } from './components/GameLogic';
 
-// FORCE REBUILD v4
-const BUILD_ID = 'build-v4-20251127';
+// BUILD INFO - Se actualiza automáticamente en CI/CD
+const BUILD_VERSION = '__BUILD_VERSION__';
+const BUILD_DATE = '__BUILD_DATE__';
 
 // Función para obtener la imagen del rol
 const getRoleImage = (player) => {
@@ -119,7 +120,6 @@ export default function App() {
         <View style={styles.centeredContent}>
           <Text style={styles.title}>🏰 AVALON</Text>
           <Text style={styles.subtitle}>Juego de Cartas de Roles</Text>
-          <Text style={{color: '#888', fontSize: 10, marginTop: 5}}>v2.0.1 - Build 27/11/2025 20:00</Text>
         </View>
         
         <View style={styles.menuContainer}>
@@ -156,6 +156,11 @@ export default function App() {
             ¿Cómo se juega a Avalon?
           </Text>
         </TouchableOpacity>
+      </View>
+      
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>v{BUILD_VERSION}</Text>
+        <Text style={styles.buildDateText}>Build: {BUILD_DATE}</Text>
       </View>
         </ScrollView>
     </SafeAreaView>
@@ -2227,6 +2232,23 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     paddingHorizontal: 20,
     minHeight: '100%',
+  },
+  versionContainer: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#444',
+  },
+  versionText: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  buildDateText: {
+    color: '#666',
+    fontSize: 10,
+    marginTop: 3,
   },
   playersScrollContent: {
     paddingBottom: 100,
