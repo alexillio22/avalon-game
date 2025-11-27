@@ -29,13 +29,20 @@ jobs:
         rm -rf package-lock.json
         rm -rf /tmp/metro-*
         rm -rf /tmp/haste-map-*
-        rm -rf $TMPDIR/metro-* || true
-        rm -rf $TMPDIR/haste-map-* || true
+        rm -rf /tmp/react-*
+        rm -rf ~/.expo
+        rm -rf ~/Library/Caches/Expo || true
+        find /tmp -name "*metro*" -exec rm -rf {} + 2>/dev/null || true
+        find /tmp -name "*haste*" -exec rm -rf {} + 2>/dev/null || true
+        echo "🧹 Todas las cachés eliminadas"
         
     - name: Install dependencies
       run: npm install
       
     - name: Build for GitHub Pages
+      env:
+        EXPO_NO_CACHE: 1
+        METRO_CACHE: none
       run: |
         npm run build-github-pages
         
