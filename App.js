@@ -171,6 +171,12 @@ export default function App() {
                     />
                     <View style={styles.editButtons}>
                       <TouchableOpacity 
+                        onPress={() => setEditingName('')}
+                        style={styles.clearButton}
+                      >
+                        <Text style={styles.clearButtonText}>🗑️</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
                         onPress={savePlayerName}
                         style={styles.saveButton}
                       >
@@ -1174,6 +1180,20 @@ const styles = StyleSheet.create({
   },
   editButtons: {
     flexDirection: 'row',
+  },
+  clearButton: {
+    backgroundColor: '#ff8c00',
+    width: 35,
+    height: 35,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  clearButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   saveButton: {
     backgroundColor: '#4a7c26',
