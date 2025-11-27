@@ -12,6 +12,7 @@ export default function App() {
   const [editingName, setEditingName] = useState('');
   const [gameAssignments, setGameAssignments] = useState([]);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   
   // Estados para efectos visuales
   const [lastVotePressed, setLastVotePressed] = useState(null); // 'success' o 'fail'
@@ -108,8 +109,139 @@ export default function App() {
              `¡Listo para jugar! (${players.length} jugadores)`}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.rulesButton} 
+          onPress={() => setShowRules(true)}
+        >
+          <Text style={styles.rulesButtonText}>📖 Reglas del Juego</Text>
+          <Text style={styles.menuButtonSubtext}>
+            ¿Cómo se juega a Avalon?
+          </Text>
+        </TouchableOpacity>
       </View>
         </ScrollView>
+    </SafeAreaView>
+  );
+
+  // Pantalla de Reglas del Juego
+  const RulesScreen = () => (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView 
+        style={styles.fullScroll}
+        contentContainerStyle={styles.rulesScrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        <View style={styles.rulesContainer}>
+          <Text style={styles.rulesTitle}>📖 Reglas de Avalon</Text>
+          
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>🎯 OBJETIVO DEL JUEGO</Text>
+            <Text style={styles.ruleText}>
+              Avalon es un juego de dedución social donde dos equipos compiten en secreto:
+            </Text>
+            <Text style={styles.ruleText}>
+              • <Text style={styles.goodTeam}>👑 BUENOS</Text>: Deben completar 3 de 5 misiones con éxito
+            </Text>
+            <Text style={styles.ruleText}>
+              • <Text style={styles.evilTeam}>⚡ MALOS</Text>: Deben sabotear 3 misiones O asesinar a Merlín
+            </Text>
+          </View>
+
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>👥 ROLES PRINCIPALES</Text>
+            
+            <Text style={styles.roleHeader}>EQUIPO BUENO:</Text>
+            <Text style={styles.ruleText}>
+              🧙‍♂️ <Text style={styles.bold}>Merlín</Text>: Ve a los malos (excepto Mordred). Debe mantenerse oculto o será asesinado.
+            </Text>
+            <Text style={styles.ruleText}>
+              🛡️ <Text style={styles.bold}>Percival</Text>: Ve a Merlín y Morgana juntos, pero no sabe cuál es cuál.
+            </Text>
+            <Text style={styles.ruleText}>
+              ⚔️ <Text style={styles.bold}>Leales Siervos</Text>: No tienen información especial, solo su lealtad.
+            </Text>
+
+            <Text style={styles.roleHeader}>EQUIPO MALO:</Text>
+            <Text style={styles.ruleText}>
+              🗡️ <Text style={styles.bold}>Asesino</Text>: Conoce a otros malos. Puede asesinar a Merlín si los buenos ganan.
+            </Text>
+            <Text style={styles.ruleText}>
+              🔮 <Text style={styles.bold}>Morgana</Text>: Se hace pasar por Merlín ante Percival.
+            </Text>
+            <Text style={styles.ruleText}>
+              👑 <Text style={styles.bold}>Mordred</Text>: Invisible para Merlín. Líder de las sombras.
+            </Text>
+            <Text style={styles.ruleText}>
+              🕴️ <Text style={styles.bold}>Oberon</Text>: Solo conoce a Mordred. Nadie lo ve a él.
+            </Text>
+            <Text style={styles.ruleText}>
+              🌑 <Text style={styles.bold}>Esbirros</Text>: Malos sin poderes. Los roles principales los ven pero ellos no ven a nadie.
+            </Text>
+          </View>
+
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>🎮 CÓMO SE JUEGA</Text>
+            
+            <Text style={styles.ruleStepTitle}>1️⃣ INICIO DEL JUEGO</Text>
+            <Text style={styles.ruleText}>
+              • Cada jugador recibe su rol secreto{'\n'}
+              • Los jugadores ven la información que su rol les permite conocer{'\n'}
+              • NADIE debe revelar su rol verbalmente durante el juego
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>2️⃣ PROPUESTA DE EQUIPO</Text>
+            <Text style={styles.ruleText}>
+              • El líder de turno propone un equipo para la misión{'\n'}
+              • El número de personas varía según la misión (2-5 jugadores){'\n'}
+              • TODOS votan aprobar o rechazar el equipo propuesto
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>3️⃣ VOTACIÓN DE EQUIPO</Text>
+            <Text style={styles.ruleText}>
+              • Si la mayoría APRUEBA: el equipo va a misión{'\n'}
+              • Si la mayoría RECHAZA: el siguiente jugador es líder{'\n'}
+              • Si se rechazan 5 equipos seguidos: los malos ganan automáticamente
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>4️⃣ MISIÓN</Text>
+            <Text style={styles.ruleText}>
+              • Solo los jugadores del equipo aprobado votan en secreto{'\n'}
+              • Buenos DEBEN votar ÉXITO{'\n'}
+              • Malos pueden votar ÉXITO o FRACASO{'\n'}
+              • Con 1 voto de FRACASO, la misión falla (excepto misión 4 con 7+ jugadores que necesita 2 fracasos)
+            </Text>
+
+            <Text style={styles.ruleStepTitle}>5️⃣ FIN DEL JUEGO</Text>
+            <Text style={styles.ruleText}>
+              <Text style={styles.bold}>Los Buenos ganan si:</Text>{'\n'}
+              • Completan 3 misiones con éxito Y el Asesino no identifica a Merlín{'\n\n'}
+              <Text style={styles.bold}>Los Malos ganan si:</Text>{'\n'}
+              • Sabotean 3 misiones{'\n'}
+              • O asesinan a Merlín después de que los buenos completen 3 misiones{'\n'}
+              • O se rechazan 5 equipos consecutivos
+            </Text>
+          </View>
+
+          <View style={styles.ruleSection}>
+            <Text style={styles.ruleSectionTitle}>💡 CONSEJOS ESTRATÉGICOS</Text>
+            <Text style={styles.ruleText}>
+              • <Text style={styles.bold}>Buenos</Text>: Observa quién propone qué equipos y cómo votan{'\n'}
+              • <Text style={styles.bold}>Merlín</Text>: Guía sutilmente sin revelar tu identidad{'\n'}
+              • <Text style={styles.bold}>Malos</Text>: No sabotéen todas las misiones - levanta sospechas{'\n'}
+              • <Text style={styles.bold}>Percival</Text>: Deduce quién es el verdadero Merlín observando el juego{'\n'}
+              • La comunicación y deducción son clave - ¡habla y convence!
+            </Text>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setShowRules(false)}
+          >
+            <Text style={styles.backButtonText}>⬅️ Volver al Menú</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 
@@ -1037,16 +1169,20 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
-        {currentScreen === 'menu' && <MenuScreen />}
-        {currentScreen === 'players' && <PlayersScreen />}
-        {currentScreen === 'roleReveal' && <RoleRevealScreen />}
-        {currentScreen === 'game' && <GameScreen />}
-        
-        {/* Botón de nuevo juego - aparece en todas las pantallas excepto el menú */}
-        {currentScreen !== 'menu' && <NewGameButton />}
-        
-        {/* Modal de confirmación */}
-        <ResetConfirmModal />
+        {showRules ? <RulesScreen /> : (
+          <>
+            {currentScreen === 'menu' && <MenuScreen />}
+            {currentScreen === 'players' && <PlayersScreen />}
+            {currentScreen === 'roleReveal' && <RoleRevealScreen />}
+            {currentScreen === 'game' && <GameScreen />}
+            
+            {/* Botón de nuevo juego - aparece en todas las pantallas excepto el menú */}
+            {currentScreen !== 'menu' && <NewGameButton />}
+            
+            {/* Modal de confirmación */}
+            <ResetConfirmModal />
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -2067,5 +2203,92 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  // Estilos para botón de Reglas
+  rulesButton: {
+    backgroundColor: '#2a5298',
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    borderRadius: 15,
+    marginHorizontal: 25,
+    marginVertical: 10,
+    borderWidth: 2,
+    borderColor: '#4a7bc8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  rulesButtonText: {
+    color: '#ffd700',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  // Estilos para pantalla de Reglas
+  rulesScrollContent: {
+    paddingBottom: 40,
+  },
+  rulesContainer: {
+    padding: 20,
+  },
+  rulesTitle: {
+    color: '#ffd700',
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 30,
+    textShadowColor: 'rgba(255, 215, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  ruleSection: {
+    backgroundColor: 'rgba(42, 82, 152, 0.3)',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#4a7bc8',
+  },
+  ruleSectionTitle: {
+    color: '#ffd700',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  ruleText: {
+    color: '#ffffff',
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 10,
+  },
+  roleHeader: {
+    color: '#ffd700',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  ruleStepTitle: {
+    color: '#4ac9ff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 15,
+    marginBottom: 8,
+  },
+  bold: {
+    fontWeight: 'bold',
+    color: '#ffd700',
+  },
+  goodTeam: {
+    color: '#4ac9ff',
+    fontWeight: 'bold',
+  },
+  evilTeam: {
+    color: '#ff6b6b',
+    fontWeight: 'bold',
   },
 });
