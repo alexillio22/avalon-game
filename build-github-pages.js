@@ -104,10 +104,10 @@ try {
   // Copiar icon-192.png si Expo no lo generó
   const icon192Path = path.join(__dirname, 'dist', 'icon-192.png');
   if (!fs.existsSync(icon192Path)) {
-    const sourceIcon = path.join(__dirname, 'assets', 'icon.png');
+    const sourceIcon = path.join(__dirname, 'asesino.png');
     if (fs.existsSync(sourceIcon)) {
       fs.copyFileSync(sourceIcon, icon192Path);
-      console.log('✅ icon-192.png copiado');
+      console.log('✅ icon-192.png copiado desde asesino.png');
     }
   }
   
