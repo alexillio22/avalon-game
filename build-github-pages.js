@@ -50,6 +50,24 @@ try {
     'static/'
   );
   
+  // Cambiar rutas absolutas a relativas (agregar ./ al inicio)
+  indexContent = indexContent.replace(
+    /src="\/static\//g,
+    'src="./static/'
+  );
+  indexContent = indexContent.replace(
+    /href="\/manifest\.json"/g,
+    'href="./manifest.json"'
+  );
+  indexContent = indexContent.replace(
+    /href="\/favicon\.ico"/g,
+    'href="./favicon.ico"'
+  );
+  indexContent = indexContent.replace(
+    /href="\/icon-192\.png"/g,
+    'href="./icon-192.png"'
+  );
+  
   // Reemplazar TODAS las referencias a .js con ?v=timestamp
   indexContent = indexContent.replace(
     /\.js"/g,
